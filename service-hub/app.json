@@ -28,6 +28,13 @@
       "expo-status-bar",
       "expo-font"
     ],
-    "scheme": "servicehub"
+    "scheme": "servicehub",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9ed6badc-8e19-4c54-bc9a-b5c1391a8221"
+      }
+    },
+    "owner": "akashkrish10"
   }
 }
