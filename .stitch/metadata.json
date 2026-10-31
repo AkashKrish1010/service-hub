@@ -1,0 +1,76 @@
+{
+  "name": "projects/16245156677596435365",
+  "projectId": "16245156677596435365",
+  "title": "Service Hub Mobile App",
+  "visibility": "PRIVATE",
+  "projectType": "PROJECT_DESIGN",
+  "origin": "STITCH",
+  "deviceType": "MOBILE",
+  "designTheme": {
+    "colorMode": "LIGHT",
+    "font": "INTER",
+    "roundness": "ROUND_EIGHT",
+    "customColor": "#1A6BFF",
+    "accentColor": "#FF6B2B",
+    "backgroundColor": "#F7F8FA",
+    "surfaceColor": "#FFFFFF"
+  },
+  "screens": {
+    "customer_home": {
+      "id": "a46bf427287c4f12a5120b99cc66db0a",
+      "title": "Service Hub - Customer Home Screen",
+      "htmlFile": ".stitch/designs/customer_home.html",
+      "pngFile": ".stitch/designs/customer_home.png",
+      "width": 780,
+      "height": 2172
+    },
+    "provider_search_map": {
+      "id": "fb0a8294e4a04f60bfbfe9e7bbe657c2",
+      "title": "Provider Search & Map View",
+      "htmlFile": ".stitch/designs/provider_search_map.html",
+      "pngFile": ".stitch/designs/provider_search_map.png",
+      "width": 780,
+      "height": 1768
+    },
+    "provider_profile": {
+      "id": "4742c1a0ca2f45aead2392440d456775",
+      "title": "Provider Profile - Kumar Plumbing Solutions",
+      "htmlFile": ".stitch/designs/provider_profile.html",
+      "pngFile": ".stitch/designs/provider_profile.png",
+      "width": 780,
+      "height": 2634
+    },
+    "booking_screen": {
+      "id": "01eba5efa8444d83bb8f2051b8198390",
+      "title": "Book Service - Kumar Plumbing Solutions",
+      "htmlFile": ".stitch/designs/booking_screen.html",
+      "pngFile": ".stitch/designs/booking_screen.png",
+      "width": 780,
+      "height": 2346
+    },
+    "ai_chat": {
+      "id": "8f41dd6b88f745388eda4fd31cccc9dd",
+      "title": "Service Hub - AI Chat Assistant",
+      "htmlFile": ".stitch/designs/ai_chat.html",
+      "pngFile": ".stitch/designs/ai_chat.png",
+      "width": 780,
+      "height": 1804
+    },
+    "provider_dashboard": {
+      "id": "f566a728827c4f12a5120b99cc66db0a",
+      "title": "Provider Dashboard - Kumar Plumbing",
+      "htmlFile": ".stitch/designs/provider_dashboard.html",
+      "pngFile": ".stitch/designs/provider_dashboard.png",
+      "width": 780,
+      "height": 2640
+    },
+    "auth_role_login": {
+      "id": "eb683e824971441ca584cd0f88d2dfb2",
+      "title": "Service Hub - Role Selection & Login",
+      "htmlFile": ".stitch/designs/auth_role_login.html",
+      "pngFile": ".stitch/designs/auth_role_login.png",
+      "width": 780,
+      "height": 1774
+    }
+  }
+}

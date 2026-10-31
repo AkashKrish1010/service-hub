@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Service Hub - Customer Home</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#1A6BFF",
+            "primary-dark": "#1251C7",
+            accent: "#FF6B2B",
+            "accent-hover": "#E55618",
+            surface: "#FFFFFF",
+            background: "#F7F8FA",
+            "surface-variant": "#E5E7EB",
+            "on-surface-variant": "#6B7280"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-gray-900 antialiased min-h-screen flex justify-center selection:bg-primary/20">
+<!-- Mobile Screen Shell Container (390px typical mobile viewport, max-w-md) -->
+<div class="w-full max-w-md bg-background min-h-screen relative flex flex-col pb-24 shadow-2xl">
+<!-- 1. Top Header (Shared Component: TopAppBar with mobile-first location/actions) -->
+<header class="fixed top-0 left-0 right-0 max-w-md mx-auto z-40 bg-surface/95 backdrop-blur-md px-4 h-16 flex items-center justify-between shadow-sm">
+<!-- Location Selector -->
+<div class="flex items-center space-x-2.5">
+<div class="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center text-primary flex-shrink-0">
+<svg class="w-5 h-5 text-primary stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 21c-4.2-4.4-7-7.9-7-11a7 7 0 1 1 14 0c0 3.1-2.8 6.6-7 11z"></path>
+<circle cx="12" cy="10" r="2.5"></circle>
+</svg>
+</div>
+<div class="flex flex-col text-left">
+<span class="text-[10px] tracking-wide text-gray-500 font-medium">Service at</span>
+<button class="flex items-center space-x-1 text-sm font-bold text-gray-900 active:opacity-75 transition-opacity">
+<span class="truncate max-w-[170px]">742 Evergreen Terrace</span>
+<svg class="w-4 h-4 text-gray-500 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="m19.5 8.25-7.5 7.5-7.5-7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</div>
+<!-- Right Header Actions -->
+<div class="flex items-center space-x-3">
+<!-- Notification Button -->
+<button aria-label="Notifications" class="relative w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 active:scale-95 transition text-gray-700">
+<svg class="w-6 h-6 stroke-[1.75]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<!-- Notification Dot Indicator -->
+<span class="absolute top-2.5 right-2.5 w-2 h-2 bg-accent rounded-full ring-2 ring-white"></span>
+</button>
+<!-- User Profile Avatar -->
+<div class="relative active:scale-95 transition-transform cursor-pointer">
+<img class="w-9 h-9 rounded-full object-cover ring-2 ring-primary/20 shadow-sm" data-alt="A clean portrait of an urban professional customer against a softly lit minimalist background. The photography is sharp, natural, and modern with calm blue studio tones, designed specifically for a premium customer account profile avatar." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqnr-1FpdQ3m-9ezQrRbCJ_AGTb-RMTWgr7xpqub3hHmHKdzyA4z3n-z7fWi3EtNuA1A9yfiytsy_0kExT5tJTJaJM5ThEs8tQl-69nNVfqTYjx-0bTAmbzGDNyxIHO6jED2H9Pmq9Ij_v5mK9y_dVL9rxdf2o3py7e9LB2IbETjwL3UptU4h84Qv6gliBzOu2dMNbxo9hcHIDy64el-4_xYe9caR41rtY0KVYFwPOXTEbArvZGtsewVgisDsk7n9rQPaIcxfzxY5I"/>
+<span class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white"></span>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 mt-16 px-4 pt-3 space-y-5">
+<!-- 2. Search Bar Section -->
+<section class="relative">
+<div class="flex items-center w-full bg-surface border border-surface-variant rounded-xl px-3.5 py-3 shadow-sm focus-within:ring-2 focus-within:ring-primary/20 focus-within:border-primary transition-all">
+<svg class="w-5 h-5 text-gray-400 stroke-[1.8] flex-shrink-0" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<circle cx="11" cy="11" r="7"></circle>
+<path d="m20 20-3.5-3.5" stroke-linecap="round"></path>
+</svg>
+<input class="w-full bg-transparent border-none text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-0 ml-2.5 py-0 px-0" placeholder="Search plumbers, electricians, cleaning..." type="text"/>
+<button aria-label="Filter Services" class="flex items-center justify-center p-1.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-600 hover:bg-gray-100 active:scale-95 transition ml-1 flex-shrink-0">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 6h16M7 12h10M10 18h4" stroke-linecap="round"></path>
+</svg>
+</button>
+</div>
+</section>
+<!-- 3. AI Recommendation Banner -->
+<section>
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-50/90 via-white to-indigo-50/60 p-4 border border-blue-100 shadow-sm">
+<!-- Subtle Decorative Accent Glow -->
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex items-center justify-between mb-2">
+<!-- AI Badge -->
+<div class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
+<svg class="w-3.5 h-3.5 text-primary stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="m9.813 15.904 1.097 2.193a1 1 0 0 0 1.78 0l1.097-2.193a3 3 0 0 1 1.63-1.63l2.193-1.097a1 1 0 0 0 0-1.78l-2.193-1.097a3 3 0 0 1-1.63-1.63L12.69 4.383a1 1 0 0 0-1.78 0l-1.097 2.193a3 3 0 0 1-1.63 1.63L7.02 9.303a1 1 0 0 0 0 1.78l2.193 1.097a3 3 0 0 1 1.63 1.63Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[11px] font-bold tracking-wider text-primary">AI MATCH</span>
+</div>
+<span class="text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">Available Now</span>
+</div>
+<!-- Headline and Description -->
+<div class="mt-1">
+<h3 class="text-base font-bold text-gray-900 tracking-tight">Need quick plumbing repair?</h3>
+<p class="text-xs text-gray-500 mt-1 leading-relaxed">
+              Kumar Plumbing is nearby with <span class="font-semibold text-gray-700">4.9 stars</span>. Tap to quick book.
+            </p>
+</div>
+<!-- Bottom Row with Fast Booking Action -->
+<div class="mt-3.5 flex items-center justify-between pt-1">
+<div class="flex items-center space-x-1 text-xs text-gray-500 font-medium">
+<svg class="w-3.5 h-3.5 text-gray-400 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="9"></circle>
+<path d="M12 7v5l3 3" stroke-linecap="round"></path>
+</svg>
+<span>Arrives in ~15 mins</span>
+</div>
+<button class="inline-flex items-center space-x-1.5 bg-accent hover:bg-accent-hover text-white text-xs font-semibold px-3.5 py-2 rounded-xl shadow-sm hover:shadow active:scale-95 transition-all">
+<span>Quick Book</span>
+<svg class="w-3.5 h-3.5 stroke-[2.2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</div>
+</section>
+<!-- 4. Service Categories (8 Items, 4 Columns) -->
+<section>
+<div class="flex items-center justify-between mb-3">
+<h2 class="text-base font-bold text-gray-900 tracking-tight">Popular Services</h2>
+<button class="text-xs font-semibold text-primary hover:text-primary-dark transition-colors">View grid</button>
+</div>
+<div class="grid grid-cols-4 gap-y-3.5 gap-x-2">
+<!-- 1. Plumbing -->
+<button class="flex flex-col items-center group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-2xl bg-blue-50/80 group-hover:bg-blue-100 flex items-center justify-center border border-blue-100/60 shadow-xs transition-colors">
+<svg class="w-6 h-6 text-primary stroke-[1.75]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-xs font-medium text-gray-800 mt-1.5 tracking-tight group-hover:text-primary transition-colors">Plumbing</span>
+</button>
+<!-- 2. Electrical -->
+<button class="flex flex-col items-center group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-2xl bg-amber-50/80 group-hover:bg-amber-100 flex items-center justify-center border border-amber-100/60 shadow-xs transition-colors">
+<svg class="w-6 h-6 text-amber-600 stroke-[1.75]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-xs font-medium text-gray-800 mt-1.5 tracking-tight group-hover:text-primary transition-colors">Electrical</span>
+</button>
+<!-- 3. Cleaning -->
+<button class="flex flex-col items-center group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-2xl bg-cyan-50/80 group-hover:bg-cyan-100 flex items-center justify-center border border-cyan-100/60 shadow-xs transition-colors">
+<svg class="w-6 h-6 text-cyan-600 stroke-[1.75]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-xs font-medium text-gray-800 mt-1.5 tracking-tight group-hover:text-primary transition-colors">Cleaning</span>
+</button>
+<!-- 4. Carpentry -->
+<button class="flex flex-col items-center group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-2xl bg-orange-50/80 group-hover:bg-orange-100 flex items-center justify-center border border-orange-100/60 shadow-xs transition-colors">
+<svg class="w-6 h-6 text-orange-600 stroke-[1.75]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="m15.5 8.5 3 3L8 22H5v-3L15.5 8.5zm1.5-1.5L19.5 4.5a2.12 2.12 0 0 1 3 3L20 10l-3-3z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-xs font-medium text-gray-800 mt-1.5 tracking-tight group-hover:text-primary transition-colors">Carpentry</span>
+</button>
+<!-- 5. Appliances -->
+<button class="flex flex-col items-center group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-2xl bg-indigo-50/80 group-hover:bg-indigo-100 flex items-center justify-center border border-indigo-100/60 shadow-xs transition-colors">
+<svg class="w-6 h-6 text-indigo-600 stroke-[1.75]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<rect height="18" rx="2" stroke-linecap="round" stroke-linejoin="round" width="16" x="4" y="3"></rect>
+<circle cx="12" cy="13" r="4"></circle>
+<path d="M8 7h.01M12 7h.01" stroke-linecap="round"></path>
+</svg>
+</div>
+<span class="text-xs font-medium text-gray-800 mt-1.5 tracking-tight group-hover:text-primary transition-colors">Appliances</span>
+</button>
+<!-- 6. Painting -->
+<button class="flex flex-col items-center group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-2xl bg-rose-50/80 group-hover:bg-rose-100 flex items-center justify-center border border-rose-100/60 shadow-xs transition-colors">
+<svg class="w-6 h-6 text-rose-600 stroke-[1.75]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 11V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M12 13v3a2 2 0 0 1-2 2H8a2 2 0 0 0-2 2v1" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-xs font-medium text-gray-800 mt-1.5 tracking-tight group-hover:text-primary transition-colors">Painting</span>
+</button>
+<!-- 7. Gardening -->
+<button class="flex flex-col items-center group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-2xl bg-emerald-50/80 group-hover:bg-emerald-100 flex items-center justify-center border border-emerald-100/60 shadow-xs transition-colors">
+<svg class="w-6 h-6 text-emerald-600 stroke-[1.75]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 21a9 9 0 0 1-9-9c0-4.97 4.03-9 9-9 4.97 0 9 4.03 9 9a9 9 0 0 1-9 9z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M12 12c-2 0-4-2-4-5 3 0 5 2 5 4v10" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M12 12c2 0 4-2 4-5-3 0-5 2-5 4" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-xs font-medium text-gray-800 mt-1.5 tracking-tight group-hover:text-primary transition-colors">Gardening</span>
+</button>
+<!-- 8. More -->
+<button class="flex flex-col items-center group active:scale-95 transition-transform">
+<div class="w-14 h-14 rounded-2xl bg-gray-100 group-hover:bg-gray-200 flex items-center justify-center border border-gray-200/70 shadow-xs transition-colors">
+<svg class="w-6 h-6 text-gray-600 stroke-[1.75]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<rect height="6" rx="1.5" width="6" x="4" y="4"></rect>
+<rect height="6" rx="1.5" width="6" x="14" y="4"></rect>
+<rect height="6" rx="1.5" width="6" x="4" y="14"></rect>
+<rect height="6" rx="1.5" width="6" x="14" y="14"></rect>
+</svg>
+</div>
+<span class="text-xs font-medium text-gray-800 mt-1.5 tracking-tight group-hover:text-primary transition-colors">More</span>
+</button>
+</div>
+</section>
+<!-- 5. Nearby Top Rated Providers Section -->
+<section class="space-y-3 pt-1">
+<div class="flex items-center justify-between">
+<div>
+<h2 class="text-base font-bold text-gray-900 tracking-tight">Top Providers Near You</h2>
+<p class="text-[11px] text-gray-500">Vetted professionals available in your zone</p>
+</div>
+<a class="text-xs font-semibold text-primary hover:underline" href="#">See All</a>
+</div>
+<div class="space-y-3">
+<!-- Provider Card 1 -->
+<div class="bg-surface rounded-2xl p-4 border border-surface-variant shadow-sm hover:shadow transition-shadow">
+<div class="flex items-start space-x-3.5">
+<img class="w-[52px] h-[52px] rounded-xl object-cover border border-gray-100 shadow-xs flex-shrink-0" data-alt="A professional electrician wearing a clean branded uniform and holding certified safety testing equipment in a bright, modern interior setting. The lighting is crisp natural daylight with soft shadows, highlighting expertise and dependable trade work in a clean aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbr61yz1iuNelAGR-RKl0YIUelEfs3UWArkbJAOPMqG3UolFiKKe46fZeUsiLThF_vw0RhL9OGtlgtO2ozma0fl1I0mPVWUpb5ojPTCTNAsb4lCY5ntXU70B_hHTt08EdKKe7AAtDu-w08qEcwFuhZUdFGpzwgfoFQ9YruZuh-wojcLBB3QusY9b7zmjS43AVhYtLpRJFe0ltPTvm_50fyAyprPcFJ8qTRiOACCT3u29kv9Hiurh1gJ6PyQg70cWAcVhV2LGAXsCCu"/>
+<div class="flex-1 min-w-0">
+<div class="flex items-center space-x-2">
+<h3 class="text-sm font-semibold text-gray-900 truncate">Apex Electrical Services</h3>
+</div>
+<!-- Verified Badge Row -->
+<div class="mt-1 flex items-center space-x-1.5">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-primary border border-blue-200/60">
+<svg class="w-3 h-3 mr-0.5 stroke-[2.2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="m4.5 12.75 6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+                    Verified
+                  </span>
+<span class="text-[11px] text-gray-400">#1 Top Electrical</span>
+</div>
+<!-- Metrics Row -->
+<div class="flex items-center space-x-2 text-xs text-gray-600 mt-2">
+<div class="flex items-center space-x-1">
+<svg class="w-3.5 h-3.5 text-amber-500 fill-amber-400" viewbox="0 0 24 24">
+<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+</svg>
+<span class="font-bold text-gray-900">4.9</span>
+<span class="text-gray-400">(128 reviews)</span>
+</div>
+<span class="text-gray-300">•</span>
+<div class="flex items-center space-x-1 text-gray-500">
+<svg class="w-3.5 h-3.5 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 21c-4.2-4.4-7-7.9-7-11a7 7 0 1 1 14 0c0 3.1-2.8 6.6-7 11z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>1.2 km</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Row: Hourly Rate & Action -->
+<div class="mt-3.5 pt-3 border-t border-gray-100 flex items-center justify-between">
+<div>
+<span class="text-[10px] text-gray-400 block font-medium">Standard Rate</span>
+<span class="text-base font-extrabold text-gray-900">$45<span class="text-xs font-medium text-gray-500">/hr</span></span>
+</div>
+<button class="bg-primary hover:bg-primary-dark text-white font-medium text-xs px-4 py-2 rounded-lg shadow-sm active:scale-95 transition-all">
+                Book Now
+              </button>
+</div>
+</div>
+<!-- Provider Card 2 -->
+<div class="bg-surface rounded-2xl p-4 border border-surface-variant shadow-sm hover:shadow transition-shadow">
+<div class="flex items-start space-x-3.5">
+<img class="w-[52px] h-[52px] rounded-xl object-cover border border-gray-100 shadow-xs flex-shrink-0" data-alt="A portrait of a skilled master plumber with tool organizer belt in a clean, modern renovated bathroom. Soft high-key lighting, bright neutral tones, professional and trustworthy craftsperson presentation fitting a high quality mobile service app." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCtgvnGjjNY6YL0Vq27TD9kSstGt9hyxokTSE0d0zYSa_wgjKb27Tnl2mVoYX9Ltk6Kl7dNhnW2ziZ-rkItyBJEd4PhTapKBkfg_KiSiCUUu8aZ9KjN5ThnN1EpG9ztCSXJDHtZQfYz_L6ixazTpXtASQB_2F4-Esw2N8BKpBn1reVsp5AaxMldq9S2Z74QPXG4k9G_Y0VDbmMhkGSQW993OL8n5LQZrTdqZg_nNNzzbjhz4lzbMMLvzFe437EYjGw_HMK_RoMVq-XC"/>
+<div class="flex-1 min-w-0">
+<div class="flex items-center space-x-2">
+<h3 class="text-sm font-semibold text-gray-900 truncate">Kumar Plumbing Solutions</h3>
+</div>
+<!-- Verified Badge Row -->
+<div class="mt-1 flex items-center space-x-1.5">
+<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+<svg class="w-3 h-3 mr-0.5 stroke-[2.2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="m4.5 12.75 6 6 9-13.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+                    Verified
+                  </span>
+<span class="text-[11px] text-gray-400">Instant Dispatch</span>
+</div>
+<!-- Metrics Row -->
+<div class="flex items-center space-x-2 text-xs text-gray-600 mt-2">
+<div class="flex items-center space-x-1">
+<svg class="w-3.5 h-3.5 text-amber-500 fill-amber-400" viewbox="0 0 24 24">
+<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+</svg>
+<span class="font-bold text-gray-900">4.8</span>
+<span class="text-gray-400">(94 reviews)</span>
+</div>
+<span class="text-gray-300">•</span>
+<div class="flex items-center space-x-1 text-gray-500">
+<svg class="w-3.5 h-3.5 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 21c-4.2-4.4-7-7.9-7-11a7 7 0 1 1 14 0c0 3.1-2.8 6.6-7 11z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>0.8 km</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Row: Hourly Rate & Action -->
+<div class="mt-3.5 pt-3 border-t border-gray-100 flex items-center justify-between">
+<div>
+<span class="text-[10px] text-gray-400 block font-medium">Standard Rate</span>
+<span class="text-base font-extrabold text-gray-900">$40<span class="text-xs font-medium text-gray-500">/hr</span></span>
+</div>
+<button class="bg-primary hover:bg-primary-dark text-white font-medium text-xs px-4 py-2 rounded-lg shadow-sm active:scale-95 transition-all">
+                Book Now
+              </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- 6. Bottom Navigation Bar (Shared Component Blueprint: BottomNavBar) -->
+<nav class="fixed bottom-0 left-0 right-0 w-full max-w-md mx-auto z-50 bg-surface/95 backdrop-blur-md px-2 py-2 flex justify-around items-center border-t border-surface-variant shadow-lg">
+<!-- 1. Home (Active Destination) -->
+<button aria-label="Home" class="flex flex-col items-center justify-center text-primary font-semibold px-2 py-1 relative active:scale-95 transition-transform">
+<svg class="w-5 h-5 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] mt-1 font-semibold">Home</span>
+<!-- Active indicator pill -->
+<span class="w-1.5 h-1.5 bg-primary rounded-full mt-0.5"></span>
+</button>
+<!-- 2. Search -->
+<button aria-label="Search" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary px-2 py-1 active:scale-95 transition-all">
+<svg class="w-5 h-5 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<circle cx="11" cy="11" r="7"></circle>
+<path d="m20 20-3.5-3.5" stroke-linecap="round"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium">Search</span>
+<span class="w-1.5 h-1.5 bg-transparent rounded-full mt-0.5"></span>
+</button>
+<!-- 3. AI Chat (Highlighted Floating/Pill Center Button) -->
+<div class="relative -top-2 flex flex-col items-center">
+<button aria-label="AI Assistant Chat" class="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-blue-500 text-white flex items-center justify-center shadow-md hover:shadow-lg ring-4 ring-white active:scale-90 transition-transform">
+<svg class="w-6 h-6 stroke-[1.9]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<rect height="10" rx="3" width="18" x="3" y="11"></rect>
+<circle cx="9" cy="16" fill="currentColor" r="1.25"></circle>
+<circle cx="15" cy="16" fill="currentColor" r="1.25"></circle>
+<path d="M12 7v4M8 7h8M4 15H2M22 15h-2" stroke-linecap="round"></path>
+</svg>
+</button>
+<span class="text-[10px] mt-0.5 font-bold text-primary">AI Chat</span>
+</div>
+<!-- 4. Bookings -->
+<button aria-label="Bookings" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary px-2 py-1 active:scale-95 transition-all">
+<svg class="w-5 h-5 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<rect height="18" rx="2" stroke-linecap="round" width="18" x="3" y="4"></rect>
+<line stroke-linecap="round" x1="16" x2="16" y1="2" y2="6"></line>
+<line stroke-linecap="round" x1="8" x2="8" y1="2" y2="6"></line>
+<line stroke-linecap="round" x1="3" x2="21" y1="10" y2="10"></line>
+</svg>
+<span class="text-[10px] mt-1 font-medium">Bookings</span>
+<span class="w-1.5 h-1.5 bg-transparent rounded-full mt-0.5"></span>
+</button>
+<!-- 5. Profile -->
+<button aria-label="Profile" class="flex flex-col items-center justify-center text-on-surface-variant hover:text-primary px-2 py-1 active:scale-95 transition-all">
+<svg class="w-5 h-5 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] mt-1 font-medium">Profile</span>
+<span class="w-1.5 h-1.5 bg-transparent rounded-full mt-0.5"></span>
+</button>
+</nav>
+</div>
+</body></html>

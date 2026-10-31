@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Service Hub - Provider Dashboard</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              DEFAULT: '#1A6BFF',
+              hover: '#1358d6',
+              light: '#EBF2FF'
+            },
+            accent: {
+              DEFAULT: '#FF6B2B',
+              hover: '#e55a1d'
+            },
+            surface: {
+              DEFAULT: '#FFFFFF',
+              variant: '#F1F3F7'
+            },
+            canvas: '#F7F8FA',
+            borderline: '#E5E7EB',
+            brandText: {
+              main: '#111827',
+              muted: '#6B7280'
+            }
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill {
+      font-variation-settings: 'FILL' 1;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Hide scrollbar for neat mobile look */
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-canvas text-brandText-main antialiased min-h-screen pb-28">
+<!-- Mobile Shell Wrapper (max-w-md for native app preview) -->
+<div class="max-w-md mx-auto min-h-screen flex flex-col relative bg-canvas">
+<!-- Top Provider Header -->
+<header class="bg-surface sticky top-0 z-40 px-4 py-3.5 shadow-sm border-b border-borderline/80">
+<div class="flex items-center justify-between">
+<!-- Profile & Status Info -->
+<div class="flex items-center space-x-3">
+<div class="relative flex-shrink-0">
+<img alt="Kumar Profile" class="w-12 h-12 rounded-full object-cover border-2 border-primary/20 shadow-sm" src="https://lh3.googleusercontent.com/aida/AEtjO1XHQBKZV0BlC29Nc-EVW0Cie07jMS9a1rEmwja0iUXSxM5uqb4hVea7SNHuUaiNA1E3L96dsh7SmCruQ1ZgeoDQkAJl15g7WiIvdTA2lt8m0tS9BK-CBUhKXo8ryTFYQylHDBTklANfNay7hSDS6pHCDDIPoLHr4LpLso0mwj6b0ctA8ygNdr_c0wHIshSFmPnJ4-WMXQ59z7NxE3hhOh99W8boO-ueH9UcXqzpEjaMBYCR1zpHTWUBEyw"/>
+<span class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-500 border-2 border-surface rounded-full shadow-sm"></span>
+</div>
+<div>
+<div class="text-xs font-semibold uppercase tracking-wider text-primary">Plumbing Specialist</div>
+<h1 class="text-base font-bold text-brandText-main leading-tight">Welcome back, Kumar</h1>
+<div class="flex items-center space-x-1.5 mt-0.5">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+<span class="text-xs font-medium text-emerald-600">Online &amp; Accepting Jobs</span>
+</div>
+</div>
+</div>
+<!-- Action Controls -->
+<div class="flex items-center space-x-2">
+<!-- Toggle Availability Switch -->
+<label aria-label="Toggle Online Availability" class="relative inline-flex items-center cursor-pointer mr-1">
+<input checked="" class="sr-only peer" id="availabilityToggle" type="checkbox"/>
+<div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+</label>
+<!-- Notification Bell -->
+<button aria-label="Notifications" class="relative w-9 h-9 rounded-full bg-canvas hover:bg-surface-variant flex items-center justify-center text-brandText-muted hover:text-brandText-main transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-accent rounded-full ring-2 ring-surface"></span>
+</button>
+<!-- Settings Button -->
+<button aria-label="Settings" class="w-9 h-9 rounded-full bg-canvas hover:bg-surface-variant flex items-center justify-center text-brandText-muted hover:text-brandText-main transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 px-4 pt-4 pb-6 space-y-5">
+<!-- Quick Stats Grid (2x2) -->
+<section>
+<div class="grid grid-cols-2 gap-3">
+<!-- Card 1: Total Earnings -->
+<div class="bg-surface p-3.5 rounded-xl border border-borderline shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-medium text-brandText-muted">Total Earnings</span>
+<span class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm font-semibold" data-icon="payments">payments</span>
+</span>
+</div>
+<div>
+<div class="text-xl font-bold tracking-tight text-brandText-main">$2,840.00</div>
+<div class="flex items-center space-x-1 mt-1">
+<span class="material-symbols-outlined text-xs text-emerald-600" data-icon="trending_up">trending_up</span>
+<span class="text-[11px] font-semibold text-emerald-600">+14% this month</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Active Bookings -->
+<div class="bg-surface p-3.5 rounded-xl border border-borderline shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-medium text-brandText-muted">Active Bookings</span>
+<span class="w-7 h-7 rounded-lg bg-blue-50 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="calendar_month">calendar_month</span>
+</span>
+</div>
+<div>
+<div class="text-xl font-bold tracking-tight text-brandText-main">3</div>
+<div class="text-[11px] font-medium text-brandText-muted mt-1">Ongoing tasks today</div>
+</div>
+</div>
+<!-- Card 3: Total Jobs -->
+<div class="bg-surface p-3.5 rounded-xl border border-borderline shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-medium text-brandText-muted">Total Jobs</span>
+<span class="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" data-icon="build">build</span>
+</span>
+</div>
+<div>
+<div class="text-xl font-bold tracking-tight text-brandText-main">452</div>
+<div class="text-[11px] font-medium text-brandText-muted mt-1">Completed successfully</div>
+</div>
+</div>
+<!-- Card 4: Rating -->
+<div class="bg-surface p-3.5 rounded-xl border border-borderline shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-2">
+<span class="text-xs font-medium text-brandText-muted">Rating</span>
+<span class="w-7 h-7 rounded-lg bg-amber-50 text-amber-500 flex items-center justify-center">
+<span class="material-symbols-outlined text-sm fill" data-icon="star" data-weight="fill" style="font-variation-settings: 'FILL' 1;">star</span>
+</span>
+</div>
+<div>
+<div class="flex items-baseline space-x-1.5">
+<span class="text-xl font-bold tracking-tight text-brandText-main">4.8</span>
+<span class="text-xs text-amber-500 font-medium">/ 5.0</span>
+</div>
+<div class="text-[11px] font-medium text-brandText-muted mt-1">(94 reviews)</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Urgent Booking Requests (Action required) -->
+<section class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<h2 class="text-sm font-bold uppercase tracking-wider text-brandText-main">New Booking Requests</h2>
+<span class="bg-accent text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-sm">2</span>
+</div>
+<span class="text-xs font-medium text-primary">Instant Response</span>
+</div>
+<!-- Request Card 1 -->
+<div class="bg-surface rounded-xl p-4 border border-borderline shadow-sm space-y-3 relative overflow-hidden transition-all hover:border-primary/40">
+<div class="flex items-start justify-between">
+<div class="space-y-1">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-primary/10 text-primary text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[13px]" data-icon="handyman">handyman</span>
+<span>Plumbing Emergency</span>
+</div>
+<h3 class="text-base font-bold text-brandText-main">Kitchen Pipe Leak Repair</h3>
+<p class="text-xs font-medium text-brandText-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="person">person</span>
+                Sarah Jenkins
+              </p>
+</div>
+<div class="text-right">
+<div class="text-xs font-medium text-brandText-muted">Payout</div>
+<div class="text-lg font-extrabold text-brandText-main tracking-tight text-emerald-600">$45.00</div>
+</div>
+</div>
+<div class="bg-canvas rounded-lg p-2.5 flex items-center justify-between text-xs text-brandText-muted">
+<div class="flex items-center space-x-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="location_on">location_on</span>
+<span class="text-brandText-main font-medium">742 Evergreen Terrace</span>
+<span class="text-[11px] text-brandText-muted">(1.2 km away)</span>
+</div>
+<div class="flex items-center space-x-1 font-semibold text-brandText-main">
+<span class="material-symbols-outlined text-[15px] text-accent" data-icon="schedule">schedule</span>
+<span>Today, 2:30 PM</span>
+</div>
+</div>
+<!-- Action Buttons side-by-side -->
+<div class="grid grid-cols-2 gap-2.5 pt-1">
+<button class="w-full py-2.5 px-3 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[16px]" data-icon="close">close</span>
+<span>Reject</span>
+</button>
+<button class="w-full py-2.5 px-3 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold shadow-sm flex items-center justify-center space-x-1.5 transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[16px]" data-icon="check_circle">check_circle</span>
+<span>Accept Booking</span>
+</button>
+</div>
+</div>
+<!-- Request Card 2 -->
+<div class="bg-surface rounded-xl p-4 border border-borderline shadow-sm space-y-3 relative overflow-hidden transition-all hover:border-primary/40">
+<div class="flex items-start justify-between">
+<div class="space-y-1">
+<div class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 text-primary text-[11px] font-semibold">
+<span class="material-symbols-outlined text-[13px]" data-icon="water_heater">water_heater</span>
+<span>Routine Maintenance</span>
+</div>
+<h3 class="text-base font-bold text-brandText-main">Water Heater Inspection</h3>
+<p class="text-xs font-medium text-brandText-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="person">person</span>
+                Marcus Vance
+              </p>
+</div>
+<div class="text-right">
+<div class="text-xs font-medium text-brandText-muted">Payout</div>
+<div class="text-lg font-extrabold text-brandText-main tracking-tight text-emerald-600">$60.00</div>
+</div>
+</div>
+<div class="bg-canvas rounded-lg p-2.5 flex items-center justify-between text-xs text-brandText-muted">
+<div class="flex items-center space-x-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="location_on">location_on</span>
+<span class="text-brandText-main font-medium">15 Maple Ave</span>
+<span class="text-[11px] text-brandText-muted">(3.4 km away)</span>
+</div>
+<div class="flex items-center space-x-1 font-semibold text-brandText-main">
+<span class="material-symbols-outlined text-[15px] text-accent" data-icon="schedule">schedule</span>
+<span>Today, 5:00 PM</span>
+</div>
+</div>
+<!-- Action Buttons side-by-side -->
+<div class="grid grid-cols-2 gap-2.5 pt-1">
+<button class="w-full py-2.5 px-3 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[16px]" data-icon="close">close</span>
+<span>Reject</span>
+</button>
+<button class="w-full py-2.5 px-3 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-semibold shadow-sm flex items-center justify-center space-x-1.5 transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[16px]" data-icon="check_circle">check_circle</span>
+<span>Accept Booking</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Today's Schedule Timeline -->
+<section class="space-y-3">
+<div class="flex items-center justify-between">
+<h2 class="text-sm font-bold uppercase tracking-wider text-brandText-main">Today's Schedule</h2>
+<span class="text-xs font-medium text-brandText-muted">3 tasks today</span>
+</div>
+<!-- Schedule Item Card -->
+<div class="bg-surface rounded-xl p-4 border border-borderline shadow-sm relative pl-4 border-l-4 border-l-primary">
+<div class="flex items-start justify-between">
+<div class="flex items-center space-x-2">
+<span class="text-xs font-bold text-primary bg-primary-light px-2.5 py-1 rounded-md">11:30 AM</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-primary">
+                In Progress
+              </span>
+</div>
+<div class="flex items-center space-x-1.5">
+<button aria-label="Call Customer" class="w-8 h-8 rounded-full bg-canvas flex items-center justify-center text-primary hover:bg-primary-light transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="call">call</span>
+</button>
+<button aria-label="Directions" class="w-8 h-8 rounded-full bg-canvas flex items-center justify-center text-primary hover:bg-primary-light transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="navigation">navigation</span>
+</button>
+</div>
+</div>
+<div class="mt-2.5">
+<h3 class="text-sm font-bold text-brandText-main">Bathroom Faucet Install</h3>
+<p class="text-xs text-brandText-muted font-medium mt-0.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="person">person</span>
+              Customer: David Miller
+            </p>
+<p class="text-xs text-brandText-muted flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[14px] text-gray-400" data-icon="pin_drop">pin_drop</span>
+              88 Oak Ridge Ln
+            </p>
+</div>
+<div class="mt-3 pt-3 border-t border-borderline flex items-center justify-between">
+<div class="text-xs font-semibold text-brandText-main">
+              Est. Duration: <span class="text-brandText-muted font-normal">45 mins</span>
+</div>
+<button class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center space-x-1 shadow-sm transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined text-[16px]" data-icon="done_all">done_all</span>
+<span>Mark as Completed</span>
+</button>
+</div>
+</div>
+<!-- Secondary Upcoming Schedule Item -->
+<div class="bg-surface/80 rounded-xl p-3.5 border border-borderline shadow-xs flex items-center justify-between">
+<div class="flex items-center space-x-3">
+<div class="text-center bg-canvas px-2.5 py-1.5 rounded-lg border border-borderline">
+<div class="text-[11px] font-bold text-brandText-muted uppercase">PM</div>
+<div class="text-xs font-bold text-brandText-main">03:45</div>
+</div>
+<div>
+<div class="text-xs font-bold text-brandText-main">Drain Clearing &amp; Diagnostic</div>
+<div class="text-[11px] text-brandText-muted">Elena Rostova • 214 Pine Street</div>
+</div>
+</div>
+<span class="text-[11px] font-medium text-brandText-muted bg-canvas px-2 py-1 rounded">Confirmed</span>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar for Provider (Fixed) -->
+<!-- Matches JSON tokens & requirements -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-surface border-t border-borderline shadow-lg max-w-md mx-auto right-0">
+<div class="flex justify-around items-center px-3 py-2">
+<!-- Tab 1: Dashboard (Active) -->
+<button aria-label="Dashboard Tab" class="flex flex-col items-center justify-center text-primary font-semibold py-1 px-3 active:scale-95 transition-transform duration-150">
+<span class="material-symbols-outlined text-[24px] fill" data-icon="dashboard" data-weight="fill" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-label text-[11px] font-semibold mt-0.5">Dashboard</span>
+</button>
+<!-- Tab 2: Bookings -->
+<button aria-label="Bookings Tab" class="flex flex-col items-center justify-center text-brandText-muted hover:text-primary py-1 px-3 active:scale-95 transition-all duration-150">
+<span class="material-symbols-outlined text-[24px]" data-icon="calendar_today">calendar_today</span>
+<span class="font-label text-[11px] font-medium mt-0.5">Bookings</span>
+</button>
+<!-- Tab 3: Earnings -->
+<button aria-label="Earnings Tab" class="flex flex-col items-center justify-center text-brandText-muted hover:text-primary py-1 px-3 active:scale-95 transition-all duration-150">
+<span class="material-symbols-outlined text-[24px]" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label text-[11px] font-medium mt-0.5">Earnings</span>
+</button>
+<!-- Tab 4: Profile -->
+<button aria-label="Profile Tab" class="flex flex-col items-center justify-center text-brandText-muted hover:text-primary py-1 px-3 active:scale-95 transition-all duration-150">
+<span class="material-symbols-outlined text-[24px]" data-icon="person">person</span>
+<span class="font-label text-[11px] font-medium mt-0.5">Profile</span>
+</button>
+</div>
+</nav>
+</div>
+<script>
+    // Online toggle simulation interaction
+    const toggle = document.getElementById('availabilityToggle');
+    if (toggle) {
+      toggle.addEventListener('change', (e) => {
+        const statusText = document.querySelector('header span.text-emerald-600');
+        const pulseDot = document.querySelector('header span.bg-emerald-500.animate-pulse');
+        if (e.target.checked) {
+          if(statusText) statusText.textContent = "Online & Accepting Jobs";
+          if(statusText) statusText.className = "text-xs font-medium text-emerald-600";
+          if(pulseDot) pulseDot.className = "w-2 h-2 rounded-full bg-emerald-500 animate-pulse";
+        } else {
+          if(statusText) statusText.textContent = "Offline (Paused)";
+          if(statusText) statusText.className = "text-xs font-medium text-brandText-muted";
+          if(pulseDot) pulseDot.className = "w-2 h-2 rounded-full bg-gray-400";
+        }
+      });
+    }
+  </script>
+</body></html>

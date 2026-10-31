@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FieldHub — Mobile Sign In</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              bg: '#0B0F17',
+              card: '#151B28',
+              cardActive: '#1E2738',
+              border: '#222D3E',
+              blue: '#3B82F6',
+              text: '#F8FAFC',
+              muted: '#94A3B8'
+            }
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+          fontFamily: {
+            headline: ["Plus Jakarta Sans", "sans-serif"],
+            display: ["Plus Jakarta Sans", "sans-serif"],
+            body: ["Plus Jakarta Sans", "sans-serif"],
+            label: ["Plus Jakarta Sans", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#0B0F17] text-[#F8FAFC] font-body min-h-screen antialiased flex flex-col justify-between selection:bg-blue-500/30 selection:text-blue-200">
+<!-- Top Ambient Glow Aura -->
+<div class="fixed top-0 left-1/2 -translate-x-1/2 w-96 h-64 bg-blue-600/10 blur-[100px] pointer-events-none -z-10"></div>
+<!-- Shared TopAppBar Component -->
+<header class="w-full bg-transparent">
+<div class="flex justify-between items-center w-full px-4 pt-4 pb-2 max-w-md mx-auto">
+<button aria-label="Back" class="h-10 w-10 rounded-full bg-[#151B28] border border-[#222D3E] flex items-center justify-center text-slate-300 hover:bg-slate-800 transition-colors active:scale-95 duration-150" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="arrow_back">arrow_back</span>
+</button>
+<span class="font-display font-bold text-xl tracking-tight text-slate-900 dark:text-slate-100">
+        FieldHub
+      </span>
+<button aria-label="Help" class="h-10 w-10 rounded-full bg-[#151B28] border border-[#222D3E] flex items-center justify-center text-slate-300 hover:bg-slate-800 transition-colors active:scale-95 duration-150" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="help_outline">help_outline</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-md mx-auto px-6 py-2 flex-1 flex flex-col justify-center">
+<!-- Brand Emblem & Welcome Header -->
+<div class="flex flex-col items-start mt-2">
+<div class="w-[52px] h-[52px] rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4 shadow-[0_0_24px_rgba(59,130,246,0.22)]">
+<!-- Interconnected Nodes Shield Icon -->
+<svg class="w-6 h-6 text-[#3B82F6]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+<circle cx="12" cy="9" r="2"></circle>
+<path d="M12 11v3"></path>
+<circle cx="9" cy="16" r="1.5"></circle>
+<circle cx="15" cy="16" r="1.5"></circle>
+<path d="M10.2 15l1.8-1 1.8 1"></path>
+</svg>
+</div>
+<h1 class="text-3xl font-bold tracking-tight text-white font-headline">Welcome back</h1>
+<p class="text-sm text-slate-400 mt-1.5 font-body">Sign in to access your routes and field tasks</p>
+</div>
+<!-- Role Segment Selector -->
+<div class="bg-[#151B28] p-1.5 rounded-2xl flex border border-[#222D3E] my-6 w-full gap-1 shadow-inner" role="tablist">
+<button aria-selected="true" class="bg-[#1E2738] border border-blue-500/40 text-white font-semibold text-sm py-2.5 px-4 rounded-xl flex-1 flex items-center justify-center gap-2 shadow-sm transition-all duration-200" id="tab-officer" role="tab" type="button">
+<!-- Shield Icon -->
+<svg class="w-4 h-4 text-[#3B82F6]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+</svg>
+<span>Field Officer</span>
+</button>
+<button aria-selected="false" class="text-slate-400 font-medium text-sm py-2.5 px-4 rounded-xl flex-1 flex items-center justify-center gap-2 hover:text-white transition-all duration-200" id="tab-driver" role="tab" type="button">
+<!-- Steering Wheel Icon -->
+<svg class="w-4 h-4 text-slate-400 group-hover:text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10"></circle>
+<circle cx="12" cy="12" r="2.5"></circle>
+<path d="M12 2v7.5"></path>
+<path d="M19.5 17l-6-3.5"></path>
+<path d="M4.5 17l6-3.5"></path>
+</svg>
+<span>Driver</span>
+</button>
+</div>
+<!-- Sign In Form -->
+<form class="space-y-4" onsubmit="event.preventDefault()">
+<!-- Field 1: Identifier -->
+<div>
+<label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 font-label" for="identifier-input">
+          OFFICER ID OR PHONE NUMBER
+        </label>
+<div class="h-14 bg-[#151B28] border border-[#222D3E] rounded-xl px-4 flex items-center gap-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all text-white">
+<svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<rect height="16" rx="3" width="18" x="3" y="4"></rect>
+<circle cx="9" cy="10" r="2"></circle>
+<path d="M15 8h2"></path>
+<path d="M15 12h2"></path>
+<path d="M7 16h10"></path>
+</svg>
+<input class="bg-transparent w-full text-sm text-white placeholder-slate-500 focus:outline-none border-0 p-0 focus:ring-0 font-body" id="identifier-input" placeholder="e.g. OF-4829 or +1 (555) 000-0000" type="text"/>
+</div>
+</div>
+<!-- Field 2: Password -->
+<div>
+<label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5 font-label" for="password-input">
+          PASSWORD
+        </label>
+<div class="h-14 bg-[#151B28] border border-[#222D3E] rounded-xl px-4 flex items-center gap-3 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all text-white">
+<svg class="w-5 h-5 text-slate-400 shrink-0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<rect height="11" rx="2" ry="2" width="18" x="3" y="11"></rect>
+<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+</svg>
+<input class="bg-transparent w-full text-sm text-white placeholder-slate-500 focus:outline-none border-0 p-0 focus:ring-0 tracking-widest font-body" id="password-input" placeholder="••••••••••••" type="password"/>
+<button aria-label="Toggle password visibility" class="text-slate-400 hover:text-slate-200 transition focus:outline-none" type="button">
+<svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+<circle cx="12" cy="12" r="3"></circle>
+</svg>
+</button>
+</div>
+</div>
+<!-- Micro Action Row -->
+<div class="flex items-center justify-between pt-1">
+<label class="flex items-center gap-2 cursor-pointer select-none">
+<input checked="" class="w-4 h-4 rounded bg-[#151B28] border border-[#222D3E] text-blue-600 focus:ring-0 focus:ring-offset-0 focus:outline-none accent-[#3B82F6] cursor-pointer" type="checkbox"/>
+<span class="text-xs text-slate-300 font-medium">Remember for 30 days</span>
+</label>
+<a class="text-xs font-semibold text-[#3B82F6] hover:text-blue-400 transition-colors" href="#">
+          Forgot password?
+        </a>
+</div>
+<!-- Primary Action Button -->
+<button class="w-full h-14 rounded-2xl bg-[#3B82F6] hover:bg-blue-600 text-white font-semibold text-base shadow-lg shadow-blue-500/25 active:scale-[0.98] transition-all duration-150 flex items-center justify-center gap-2 mt-6" type="submit">
+<span>Sign In as Officer</span>
+<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M5 12h14"></path>
+<path d="m12 5 7 7-7 7"></path>
+</svg>
+</button>
+</form>
+<!-- Biometric Alternative -->
+<div class="my-6 flex items-center gap-3 before:flex-1 before:h-px before:bg-[#222D3E] after:flex-1 after:h-px after:bg-[#222D3E]">
+<span class="text-[11px] font-semibold uppercase tracking-wider text-slate-500">OR CONTINUE WITH</span>
+</div>
+<div class="flex flex-col items-center">
+<button aria-label="Sign in using biometric recognition" class="w-14 h-14 rounded-2xl border border-[#222D3E] bg-[#151B28] text-slate-300 hover:text-blue-400 hover:border-blue-500/40 hover:bg-[#1A2233] active:scale-95 transition-all shadow-sm flex items-center justify-center group" type="button">
+<!-- Clean Modern Fingerprint SVG Icon -->
+<svg class="w-6 h-6 text-slate-300 group-hover:text-[#3B82F6] transition-colors" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<path d="M12 12v.01"></path>
+<path d="M19.07 4.93A10 10 0 0 0 4.93 19.07"></path>
+<path d="M16.24 7.76A6 6 0 0 0 7.76 16.24"></path>
+<path d="M2 12h1"></path>
+<path d="M21 12h1"></path>
+<path d="M12 2v1"></path>
+<path d="M12 21v1"></path>
+</svg>
+</button>
+<span class="text-xs text-slate-400 mt-2">Quick biometric login</span>
+</div>
+<!-- Sign up alternative -->
+<p class="text-center mt-6 text-sm text-slate-400">
+      Don't have an account? 
+      <a class="font-semibold text-[#3B82F6] hover:text-blue-400 transition-colors ml-1" href="#">Sign up</a>
+</p>
+</main>
+<!-- Shared Footer Component -->
+<footer class="w-full bg-transparent py-4 text-center max-w-md mx-auto px-6">
+<div class="flex justify-center items-center gap-3 text-xs text-slate-500 font-body mb-2">
+<a class="hover:text-slate-300 transition-colors" href="#">Privacy Policy</a>
+<span class="text-slate-700">•</span>
+<a class="hover:text-slate-300 transition-colors" href="#">Terms of Service</a>
+<span class="text-slate-700">•</span>
+<a class="hover:text-slate-300 transition-colors" href="#">Help Support</a>
+</div>
+<p class="text-xs text-slate-500 font-body">FieldHub © 2024. All rights reserved.</p>
+</footer>
+</body></html>

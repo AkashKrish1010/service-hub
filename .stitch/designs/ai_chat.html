@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Service Hub - AI Chat Assistant</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#1A6BFF",
+            "primary-dark": "#1354CC",
+            accent: "#FF6B2B",
+            "accent-hover": "#E85B1E",
+            surface: "#FFFFFF",
+            "surface-variant": "#F7F8FA",
+            "border-subtle": "#E5E7EB",
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            full: "9999px"
+          },
+          fontFamily: {
+            headline: ["Inter", "sans-serif"],
+            display: ["Inter", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            label: ["Inter", "sans-serif"]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      line-height: 1;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .material-symbols-outlined.fill-icon {
+      font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-variant font-body antialiased min-h-screen flex justify-center text-gray-900">
+<!-- Mobile Viewport Container -->
+<main class="w-full max-w-md bg-surface-variant flex flex-col min-h-screen relative shadow-2xl border-x border-border-subtle">
+<!-- Top App Bar (Sticky Header) -->
+<header class="sticky top-0 left-0 w-full z-30 bg-surface/95 backdrop-blur-md border-b border-border-subtle px-4 h-16 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<!-- Back Navigation Target -->
+<button aria-label="Navigate back" class="w-9 h-9 rounded-full border border-border-subtle flex items-center justify-center text-gray-600 hover:bg-surface-variant active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<!-- Bot Avatar & Info -->
+<div class="flex items-center gap-2.5">
+<div class="relative">
+<div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-white shadow-xs">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+</div>
+<span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white"></span>
+</div>
+<div>
+<h1 class="font-headline font-semibold text-gray-900 text-sm tracking-tight leading-tight">Service Hub AI</h1>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<span class="text-[11px] font-medium text-emerald-600 leading-none">Ready to help</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Trailing Action Button -->
+<button aria-label="Clear chat session" class="w-9 h-9 rounded-full border border-border-subtle flex items-center justify-center text-gray-500 hover:text-gray-800 hover:bg-surface-variant active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[19px]">restart_alt</span>
+</button>
+</header>
+<!-- Quick Prompts Horizontal Chip Carousel -->
+<section class="bg-surface/60 backdrop-blur-xs border-b border-border-subtle py-2 px-4 sticky top-16 z-20">
+<div class="flex items-center gap-2 overflow-x-auto no-scrollbar scroll-smooth">
+<button class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border-subtle bg-surface text-gray-700 hover:border-primary hover:text-primary text-xs font-medium shadow-xs transition-colors active:scale-95" type="button">
+<span class="material-symbols-outlined text-[15px] text-primary">plumbing</span>
+<span>Plumber near me</span>
+</button>
+<button class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border-subtle bg-surface text-gray-700 hover:border-primary hover:text-primary text-xs font-medium shadow-xs transition-colors active:scale-95" type="button">
+<span class="material-symbols-outlined text-[15px] text-sky-500">mode_fan</span>
+<span>AC making noise</span>
+</button>
+<button class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border-subtle bg-surface text-gray-700 hover:border-primary hover:text-primary text-xs font-medium shadow-xs transition-colors active:scale-95" type="button">
+<span class="material-symbols-outlined text-[15px] text-amber-500">bolt</span>
+<span>Electrician urgently</span>
+</button>
+<button class="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border-subtle bg-surface text-gray-700 hover:border-primary hover:text-primary text-xs font-medium shadow-xs transition-colors active:scale-95" type="button">
+<span class="material-symbols-outlined text-[15px] text-indigo-500">cleaning_services</span>
+<span>Deep house cleaning</span>
+</button>
+</div>
+</section>
+<!-- Main Chat Message Stream -->
+<div class="flex-1 px-4 py-4 space-y-4 overflow-y-auto pb-32">
+<!-- Date Divider -->
+<div class="flex justify-center my-1">
+<span class="text-[11px] font-medium text-gray-400 bg-surface px-2.5 py-0.5 rounded-full border border-border-subtle">Today</span>
+</div>
+<!-- Bubble 1: AI Assistant greeting -->
+<article class="flex items-start gap-2.5 max-w-[88%]">
+<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white flex-shrink-0 mt-0.5 shadow-xs">
+<span class="material-symbols-outlined text-[15px]">smart_toy</span>
+</div>
+<div class="flex flex-col">
+<div class="bg-surface border border-border-subtle rounded-2xl rounded-tl-xs p-3.5 shadow-xs text-sm text-gray-800 leading-relaxed">
+            Hello! I am your Service Hub Assistant. What issue are you experiencing today?
+          </div>
+<span class="text-[11px] text-gray-400 mt-1 pl-1">10:14 AM</span>
+</div>
+</article>
+<!-- Bubble 2: User Message -->
+<article class="flex flex-col items-end ml-auto max-w-[85%]">
+<div class="bg-primary text-white rounded-2xl rounded-tr-xs p-3.5 shadow-sm text-sm leading-relaxed">
+          I need an urgent plumber for a leaking kitchen pipe tomorrow morning.
+        </div>
+<div class="flex items-center gap-1 text-[11px] text-gray-400 mt-1 pr-1 font-medium">
+<span>10:15 AM</span>
+<span class="material-symbols-outlined text-primary text-[14px]">done_all</span>
+</div>
+</article>
+<!-- Bubble 3: AI Assistant with Match Card -->
+<article class="flex items-start gap-2.5 max-w-[94%]">
+<div class="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-white flex-shrink-0 mt-0.5 shadow-xs">
+<span class="material-symbols-outlined text-[15px]">smart_toy</span>
+</div>
+<div class="flex flex-col w-full">
+<div class="bg-surface border border-border-subtle rounded-2xl rounded-tl-xs p-3.5 shadow-xs text-sm text-gray-800 leading-relaxed">
+<p>I found 2 top-rated plumbers available in Downtown tomorrow morning between 9:00 AM - 12:00 PM. Here is the closest match:</p>
+<!-- Nested Inline Provider Card -->
+<div class="bg-surface border border-border-subtle rounded-xl p-3.5 mt-3 shadow-xs">
+<div class="flex items-start gap-3">
+<div class="relative flex-shrink-0">
+<img class="w-[52px] h-[52px] rounded-xl object-cover border border-border-subtle shadow-2xs" data-alt="Close up photographic portrait of a professional male plumbing technician with a friendly smile wearing a navy blue polo uniform holding tools inside a bright modern workshop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZoDz80ceB0sXGoHOrIOQ-p-5vLw7Fsj-ZQPcsQNYHFMXyK5A6yuqfdP5yLLXy_GCPn_V5EveugLPLzpOISR9iuggx_-y037Fc4ecWDGWToq5XfOX28IALsfdHp-ctVYBH-BC8nrXyfI2QcWXeLWO9rNAvfvoytcSZt0Q70HoAiIZkH16yU1A7Jg0nnbeDBDXgpYmV7Xx9TMTEGs2zNFL9fQw-e9ILVWjqCdm3EI9-AGf5ggfS0roVw1fuY-SA0JskPoifgblrv-_7"/>
+<span class="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-white"></span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h3 class="font-headline font-semibold text-gray-900 text-sm truncate">Kumar Plumbing Solutions</h3>
+<span class="material-symbols-outlined text-primary text-[16px] fill-icon flex-shrink-0" title="Verified Provider">verified</span>
+</div>
+<p class="text-xs text-gray-500 mt-0.5 truncate">Master Plumber • Downtown</p>
+<div class="flex items-center gap-1.5 mt-2 flex-wrap">
+<div class="flex items-center gap-0.5">
+<span class="material-symbols-outlined text-amber-400 text-[14px] fill-icon">star</span>
+<span class="text-xs font-bold text-gray-900">4.8</span>
+<span class="text-[11px] text-gray-500">(94 reviews)</span>
+</div>
+<span class="text-gray-300 text-xs">•</span>
+<div class="flex items-center gap-0.5 text-[11px] text-gray-500">
+<span class="material-symbols-outlined text-[13px] text-gray-400">near_me</span>
+<span>0.8 km</span>
+</div>
+<span class="text-primary font-bold text-xs ml-auto">$40/hr</span>
+</div>
+</div>
+</div>
+<!-- Quick highlight tags -->
+<div class="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-border-subtle text-[11px] text-gray-600">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-emerald-600 text-[14px]">schedule</span>
+<span class="truncate">Tomorrow 9:00 AM</span>
+</div>
+<div class="flex items-center gap-1 justify-end">
+<span class="material-symbols-outlined text-primary text-[14px]">format_image_left</span>
+<span class="truncate">Fully Insured</span>
+</div>
+</div>
+<!-- Action CTA -->
+<button class="w-full bg-accent hover:bg-accent-hover text-white text-xs font-semibold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 mt-3 shadow-sm transition-all active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-[16px]">bolt</span>
+<span>Book Now with Kumar</span>
+</button>
+</div>
+</div>
+<span class="text-[11px] text-gray-400 mt-1 pl-1">10:15 AM</span>
+</div>
+</article>
+</div>
+<!-- Bottom Sticky Chat Input Bar -->
+<div class="fixed bottom-0 left-0 w-full z-40 bg-surface border-t border-border-subtle max-w-md mx-auto px-4 py-3 pb-6 shadow-lg">
+<div class="flex items-center bg-surface-variant border border-border-subtle rounded-full px-3 py-1.5 gap-2 focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+<!-- Voice Input CTA -->
+<button aria-label="Voice input" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 hover:text-primary hover:bg-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</button>
+<!-- Text Input Field -->
+<input class="text-sm text-gray-800 placeholder-gray-400 bg-transparent flex-1 outline-none border-none p-0 focus:ring-0 focus:border-none" placeholder="Describe your home service need..." type="text"/>
+<!-- Attachment Button -->
+<button aria-label="Attach file or photo" class="w-8 h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">attach_file</span>
+</button>
+<!-- Send Button -->
+<button aria-label="Send message" class="w-8 h-8 flex items-center justify-center rounded-full bg-primary hover:bg-primary-dark text-white shadow-xs transition-transform active:scale-95 flex-shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_upward</span>
+</button>
+</div>
+</div>
+</main>
+</body></html>
