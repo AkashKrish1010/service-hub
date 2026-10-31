@@ -1,7 +1,10 @@
 import React from 'react';
 import { Phone, Mail, MapPin } from 'lucide-react';
 
-export const Footer: React.FC<{ onNavigate: (view: string) => void }> = ({ onNavigate }) => {
+export const Footer: React.FC<{
+  onNavigate: (view: string) => void;
+  onOpenAuth?: (role?: 'customer' | 'provider' | 'admin') => void;
+}> = ({ onNavigate, onOpenAuth }) => {
   return (
     <footer className="bg-white border-t border-borderSubtle text-slate-600 pt-16 pb-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">

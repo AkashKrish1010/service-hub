@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, User, Mail, Lock, Phone, ArrowRight, UserCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -20,7 +20,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const { showToast } = useToast();
 
   const [mode, setMode] = useState<'login' | 'signup'>(initialMode);
-  const [role, setRole] = useState<'customer' | 'provider' | 'admin'>(initialRole);
+  const [role, setRole] = useState<'customer' | 'provider' | 'admin'>(
+    initialMode === 'signup' && initialRole === 'admin' ? 'customer' : initialRole
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      setMode(initialMode);
+      setRole(initialMode === 'signup' && initialRole === 'admin' ? 'customer' : initialRole);
+    }
+  }, [isOpen, initialRole, initialMode]);
+
+  const handleModeChange = (newMode: 'login' | 'signup') => {
+    setMode(newMode);
+    if (newMode === 'signup' && role === 'admin') {
+      setRole('customer');
+    }
+  };
   
   // Login form state
   const [identifier, setIdentifier] = useState('');
@@ -69,14 +85,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const formattedPhone = signupPhone.trim()
         ? (signupPhone.trim().startsWith('+91') ? signupPhone.trim() : `+91 ${signupPhone.trim()}`)
         : '';
+      const finalRole = role === 'admin' ? 'customer' : role;
       await register({
         name: signupName.trim(),
         email: signupEmail.trim(),
         phone: formattedPhone,
         password: signupPassword.trim(),
-        role,
+        role: finalRole,
       });
-      showToast('Account created successfully! Welcome to Service Hub.', 'success');
+      showToast(
+        finalRole === 'provider'
+          ? 'Registration successful! Your provider profile will be reviewed by admin.'
+          : 'Account created successfully! Welcome to Service Hub.',
+        'success'
+      );
       onClose();
     } catch (err: any) {
       const msg = err.response?.data?.message || 'Registration failed. Please check inputs.';
@@ -117,7 +139,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         {/* Role Toggle Tabs */}
         <div className="flex p-1 bg-slate-100 rounded-2xl mb-5">
-          {(['customer', 'provider', 'admin'] as const).map((r) => (
+          {(mode === 'login'
+            ? (['customer', 'provider', 'admin'] as const)
+            : (['customer', 'provider'] as const)
+          ).map((r) => (
             <button
               key={r}
               type="button"
@@ -128,7 +153,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   : 'text-slate-500 hover:text-slate-800'
               }`}
             >
-              {r}
+              {r === 'provider' && mode === 'signup' ? 'Service Provider' : r}
             </button>
           ))}
         </div>
@@ -281,7 +306,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               Don't have an account?{' '}
               <button
                 type="button"
-                onClick={() => setMode('signup')}
+                onClick={() => handleModeChange('signup')}
                 className="text-primary font-bold hover:underline cursor-pointer ml-1"
               >
                 Sign Up
@@ -292,7 +317,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               Already registered?{' '}
               <button
                 type="button"
-                onClick={() => setMode('login')}
+                onClick={() => handleModeChange('login')}
                 className="text-primary font-bold hover:underline cursor-pointer ml-1"
               >
                 Sign In
