@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Text, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, Text, Platform, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { Button } from '../ui/Button';
 import { COLORS, RADIUS } from '../../constants/theme';
-import { MapPin } from 'lucide-react-native';
+import { MapPin, Navigation } from 'lucide-react-native';
+import * as Location from 'expo-location';
 
 interface LocationPickerProps {
   initialLocation?: { lat: number; lng: number };
@@ -12,12 +13,53 @@ interface LocationPickerProps {
 }
 
 export const LocationPicker: React.FC<LocationPickerProps> = ({
-  initialLocation = { lat: 13.0418, lng: 80.2337 }, // T. Nagar, Chennai
+  initialLocation = { lat: 13.0418, lng: 80.2337 }, // Chennai
   onConfirmLocation,
   onCancel,
 }) => {
   const [currentCoords, setCurrentCoords] = useState(initialLocation);
-  const [address, setAddress] = useState('T. Nagar, Chennai, Tamil Nadu');
+  const [address, setAddress] = useState('Resolving location...');
+  const [locating, setLocating] = useState(false);
+
+  useEffect(() => {
+    reverseGeocode(initialLocation.lat, initialLocation.lng);
+  }, []);
+
+  const reverseGeocode = async (lat: number, lng: number) => {
+    try {
+      const rev = await Location.reverseGeocodeAsync({ latitude: lat, longitude: lng });
+      if (rev && rev.length > 0) {
+        const item = rev[0];
+        const parts = [
+          item.name || item.street,
+          item.district || item.subregion,
+          item.city || item.region,
+        ].filter(Boolean);
+        setAddress(parts.length > 0 ? parts.join(', ') : `${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      } else {
+        setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+      }
+    } catch {
+      setAddress(`${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+    }
+  };
+
+  const handleUseCurrentLocation = async () => {
+    setLocating(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        const coords = { lat: loc.coords.latitude, lng: loc.coords.longitude };
+        setCurrentCoords(coords);
+        await reverseGeocode(coords.lat, coords.lng);
+      }
+    } catch (e) {
+      console.warn('GPS location fetch error', e);
+    } finally {
+      setLocating(false);
+    }
+  };
 
   const leafletHTML = `
     <!DOCTYPE html>
@@ -34,10 +76,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
       <body>
         <div id="map"></div>
         <script>
-          var map = L.map('map').setView([${initialLocation.lat}, ${initialLocation.lng}], 14);
+          var map = L.map('map').setView([${currentCoords.lat}, ${currentCoords.lng}], 14);
           L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-          var marker = L.marker([${initialLocation.lat}, ${initialLocation.lng}], { draggable: true }).addTo(map);
+          var marker = L.marker([${currentCoords.lat}, ${currentCoords.lng}], { draggable: true }).addTo(map);
 
           function updateCoord(lat, lng) {
             window.ReactNativeWebView.postMessage(JSON.stringify({ lat: lat, lng: lng }));
@@ -57,11 +99,11 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     </html>
   `;
 
-  const handleMessage = (event: any) => {
+  const handleMessage = async (event: any) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
       setCurrentCoords(data);
-      setAddress(`Lat: ${data.lat.toFixed(4)}, Lng: ${data.lng.toFixed(4)}`);
+      await reverseGeocode(data.lat, data.lng);
     } catch (e) {
       console.warn('Map location parse error', e);
     }
@@ -70,8 +112,24 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <MapPin size={18} color={COLORS.primary} />
-        <Text style={styles.headerText}>Tap or drag pin to set service area</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
+          <MapPin size={18} color={COLORS.primary} />
+          <Text style={styles.headerText}>Tap or drag pin to set service area</Text>
+        </View>
+        <TouchableOpacity
+          style={styles.gpsBtn}
+          onPress={handleUseCurrentLocation}
+          disabled={locating}
+        >
+          {locating ? (
+            <ActivityIndicator size="small" color={COLORS.primary} />
+          ) : (
+            <>
+              <Navigation size={13} color={COLORS.primary} />
+              <Text style={styles.gpsBtnText}>Use GPS</Text>
+            </>
+          )}
+        </TouchableOpacity>
       </View>
 
       <View style={styles.mapContainer}>
@@ -92,7 +150,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 
       <View style={styles.footer}>
         <View style={styles.addressBox}>
-          <Text style={styles.addressLabel}>Selected Location:</Text>
+          <Text style={styles.addressLabel}>Selected Location Area:</Text>
           <Text style={styles.addressText}>{address}</Text>
         </View>
         <View style={styles.buttonRow}>
@@ -124,6 +182,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 12,
     backgroundColor: COLORS.tintBlue,
     gap: 8,
@@ -131,6 +190,22 @@ const styles = StyleSheet.create({
   headerText: {
     fontSize: 13,
     fontWeight: '600',
+    color: COLORS.primary,
+  },
+  gpsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: RADIUS.sm,
+    borderWidth: 1,
+    borderColor: COLORS.primary,
+  },
+  gpsBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
     color: COLORS.primary,
   },
   mapContainer: {

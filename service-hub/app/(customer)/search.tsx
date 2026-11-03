@@ -20,6 +20,7 @@ import { Badge } from '../../components/ui/Badge';
 import { providerService } from '../../services/provider.service';
 import { categoryService } from '../../services/other.services';
 import { TopNavbar } from '../../components/common/TopNavbar';
+import * as Location from 'expo-location';
 import {
   Search as SearchIcon,
   SlidersHorizontal,
@@ -39,6 +40,7 @@ export default function SearchScreen() {
   const [providers, setProviders] = useState<any[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number }>({ lat: 13.0418, lng: 80.2337 });
   const [categories, setCategories] = useState<string[]>([
     'All',
     'Plumbing',
@@ -58,17 +60,28 @@ export default function SearchScreen() {
   }, []);
 
   useEffect(() => {
+    Location.requestForegroundPermissionsAsync().then(({ status }) => {
+      if (status === 'granted') {
+        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }).then((pos) => {
+          setUserCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        }).catch(() => {});
+      }
+    }).catch(() => {});
+  }, []);
+
+  useEffect(() => {
     fetchProviders();
-  }, [selectedCategory]);
+  }, [selectedCategory, searchQuery, userCoords]);
 
   const fetchProviders = async () => {
     setLoading(true);
     try {
       const data = await providerService.getNearby({
         category: selectedCategory === 'All' ? undefined : selectedCategory,
-        lat: 13.0418,
-        lng: 80.2337,
-        radius: 40,
+        lat: userCoords.lat,
+        lng: userCoords.lng,
+        radius: 60,
+        search: searchQuery.trim() || undefined,
       });
       setProviders(data || []);
       if (data && data.length > 0) {
@@ -88,15 +101,19 @@ export default function SearchScreen() {
     name: p.userId?.name || 'Verified Pro',
     category: p.category,
     hourlyRate: p.hourlyRate,
-    rating: p.averageRating,
-    lat: p.location?.coordinates ? p.location.coordinates[1] : 13.0418,
-    lng: p.location?.coordinates ? p.location.coordinates[0] : 80.2337,
+    rating: p.averageRating ?? 0,
+    lat: p.location?.coordinates ? p.location.coordinates[1] : userCoords.lat,
+    lng: p.location?.coordinates ? p.location.coordinates[0] : userCoords.lng,
   }));
 
   const filteredProviders = providers.filter((p) => {
-    const nameMatch = p.userId?.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const catMatch = p.category.toLowerCase().includes(searchQuery.toLowerCase());
-    return nameMatch || catMatch;
+    if (!searchQuery.trim()) return true;
+    const q = searchQuery.toLowerCase();
+    const nameMatch = (p.userId?.name || '').toLowerCase().includes(q);
+    const catMatch = (p.category || '').toLowerCase().includes(q);
+    const addressMatch = (p.location?.address || '').toLowerCase().includes(q);
+    const bioMatch = (p.bio || '').toLowerCase().includes(q);
+    return nameMatch || catMatch || addressMatch || bioMatch;
   });
 
   return (
@@ -164,6 +181,7 @@ export default function SearchScreen() {
         <View style={styles.mapWrapper}>
           <ProviderMap
             providers={mapProviders}
+            userLocation={userCoords}
             selectedProviderId={selectedProvider?._id}
             onSelectProvider={(mp) => {
               const matched = providers.find((p) => p._id === mp.id);

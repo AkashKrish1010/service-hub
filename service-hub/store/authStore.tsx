@@ -23,6 +23,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updatePassword: (passwords: { currentPassword: string; newPassword: string }) => Promise<void>;
   updateProfile: (profileData: { name?: string; phone?: string; profileImage?: string; address?: string }) => Promise<void>;
+  refreshUser: () => Promise<User | null>;
   setUser: (user: User | null) => void;
 }
 
@@ -97,6 +98,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const refreshUser = async () => {
+    try {
+      const me = await authService.getMe();
+      if (me) {
+        setUser(me);
+        await AsyncStorage.setItem('auth_user', JSON.stringify(me));
+      }
+      return me;
+    } catch (e) {
+      console.warn('[AuthStore] Error refreshing user session:', e);
+      return null;
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -108,6 +123,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         updatePassword,
         updateProfile,
+        refreshUser,
         setUser,
       }}
     >

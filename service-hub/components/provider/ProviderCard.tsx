@@ -51,10 +51,18 @@ export const ProviderCard: React.FC<ProviderCardProps> = ({
             )}
           </View>
           <Text style={styles.category}>{provider.category}</Text>
+          {provider.location?.address ? (
+            <View style={styles.locationSnippetRow}>
+              <MapPin size={11} color={COLORS.primary} />
+              <Text style={styles.locationSnippetText} numberOfLines={1}>
+                {provider.location.address}
+              </Text>
+            </View>
+          ) : null}
           <View style={styles.metaRow}>
             <Rating
-              score={provider.averageRating || 4.8}
-              reviewsCount={provider.totalReviews || 0}
+              score={provider.averageRating ?? 0}
+              reviewsCount={provider.totalReviews ?? 0}
               size={12}
             />
             {provider.distance ? (
@@ -116,7 +124,19 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: COLORS.textMuted,
     marginTop: 2,
+    marginBottom: 2,
+  },
+  locationSnippetRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
     marginBottom: 4,
+  },
+  locationSnippetText: {
+    fontSize: 11,
+    color: COLORS.primary,
+    fontWeight: '500',
+    flexShrink: 1,
   },
   metaRow: {
     flexDirection: 'row',

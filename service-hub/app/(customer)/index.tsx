@@ -19,6 +19,7 @@ import { providerService } from '../../services/provider.service';
 import { categoryService } from '../../services/other.services';
 import { useAuth } from '../../store/authStore';
 import { TopNavbar } from '../../components/common/TopNavbar';
+import * as Location from 'expo-location';
 import {
   MapPin,
   ChevronDown,
@@ -43,15 +44,51 @@ export default function CustomerHome() {
   const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [currentAddress, setCurrentAddress] = useState<string>(user?.address || 'Detecting location...');
+  const [coords, setCoords] = useState<{ lat: number; lng: number }>({ lat: 13.0418, lng: 80.2337 });
 
   useEffect(() => {
-    fetchData();
+    initLocationAndData();
   }, []);
 
-  const fetchData = async () => {
+  const initLocationAndData = async () => {
+    let resolvedCoords = { lat: 13.0418, lng: 80.2337 };
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        resolvedCoords = { lat: loc.coords.latitude, lng: loc.coords.longitude };
+        setCoords(resolvedCoords);
+
+        const rev = await Location.reverseGeocodeAsync({
+          latitude: resolvedCoords.lat,
+          longitude: resolvedCoords.lng,
+        });
+        if (rev && rev.length > 0) {
+          const place = rev[0];
+          const parts = [place.district || place.subregion || place.name, place.city || place.region].filter(Boolean);
+          if (parts.length > 0) {
+            setCurrentAddress(parts.join(', '));
+          } else {
+            setCurrentAddress(user?.address || 'Chennai, Tamil Nadu');
+          }
+        }
+      } else {
+        setCurrentAddress(user?.address || 'Chennai, Tamil Nadu');
+      }
+    } catch (e) {
+      console.warn('Location detection fallback', e);
+      setCurrentAddress(user?.address || 'Chennai, Tamil Nadu');
+    }
+
+    await fetchData(resolvedCoords);
+  };
+
+  const fetchData = async (c?: { lat: number; lng: number }) => {
+    const targetCoords = c || coords;
     try {
       const [nearbyData, catData] = await Promise.all([
-        providerService.getNearby({ lat: 13.0418, lng: 80.2337, radius: 40 }),
+        providerService.getNearby({ lat: targetCoords.lat, lng: targetCoords.lng, radius: 50 }),
         categoryService.getAll().catch(() => []),
       ]);
       setProviders(nearbyData || []);
@@ -99,7 +136,7 @@ export default function CustomerHome() {
             refreshing={refreshing}
             onRefresh={() => {
               setRefreshing(true);
-              fetchData();
+              initLocationAndData();
             }}
           />
         }
@@ -117,7 +154,7 @@ export default function CustomerHome() {
             <Text style={styles.locationCaption}>Service Address</Text>
             <View style={styles.locationTitleRow}>
               <Text style={styles.locationTitle} numberOfLines={1}>
-                {user?.address || 'T. Nagar, Chennai'}
+                {currentAddress}
               </Text>
               <ChevronDown size={14} color={COLORS.textMain} />
             </View>

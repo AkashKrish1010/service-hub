@@ -19,6 +19,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { providerService } from '../../services/provider.service';
 import { bookingService } from '../../services/booking.service';
 import { useAuth } from '../../store/authStore';
+import { useSocket } from '../../hooks/useSocket';
 import {
   TrendingUp,
   Clock,
@@ -37,6 +38,7 @@ import {
   Zap,
   ChevronDown,
   ChevronUp,
+  ShieldAlert,
 } from 'lucide-react-native';
 import { ThemedAlertModal } from '../../components/ui/ThemedAlertModal';
 import { TopNavbar } from '../../components/common/TopNavbar';
@@ -45,8 +47,9 @@ import { aiService } from '../../services/ai.service';
 
 export default function ProviderDashboard() {
   const router = useRouter();
-  const { user, logout } = useAuth();
-  const [isOnline, setIsOnline] = useState(true);
+  const { user, logout, refreshUser } = useAuth();
+  const socket = useSocket();
+  const [isOnline, setIsOnline] = useState(false);
   const [stats, setStats] = useState<any>(null);
   const [pendingBookings, setPendingBookings] = useState<any[]>([]);
   const [ongoingBookings, setOngoingBookings] = useState<any[]>([]);
@@ -82,8 +85,21 @@ export default function ProviderDashboard() {
     fetchDashboard();
   }, []);
 
+  useEffect(() => {
+    if (!socket) return;
+    const handleUserUpdated = () => {
+      refreshUser();
+      fetchDashboard();
+    };
+    socket.on('user_updated', handleUserUpdated);
+    return () => {
+      socket.off('user_updated', handleUserUpdated);
+    };
+  }, [socket]);
+
   const fetchDashboard = async () => {
     try {
+      await refreshUser().catch(() => null);
       const [statsData, bookingsData] = await Promise.all([
         providerService.getDashboardStats().catch(() => null),
         bookingService.getProviderBookings().catch(() => []),
@@ -93,7 +109,8 @@ export default function ProviderDashboard() {
         totalEarnings: 0,
         activeBookings: 0,
         completedBookings: 0,
-        averageRating: 5.0,
+        averageRating: 0.0,
+        totalReviews: 0,
       });
 
       const pending = (bookingsData || []).filter((b: any) => b.status === 'pending');
@@ -198,7 +215,7 @@ export default function ProviderDashboard() {
                 uri={user?.profileImage || ''}
                 name={user?.name || 'Provider'}
                 size={48}
-                isOnline={isOnline}
+                isOnline={isOnline && user?.isApproved !== false}
               />
             </TouchableOpacity>
             <View style={{ marginLeft: 12 }}>
@@ -208,21 +225,58 @@ export default function ProviderDashboard() {
           </View>
         </View>
 
+        {/* Pending Admin Approval Banner */}
+        {user?.isApproved === false && (
+          <View style={styles.pendingBanner}>
+            <View style={styles.pendingHeaderRow}>
+              <ShieldAlert size={20} color="#D97706" />
+              <Text style={styles.pendingTitle}>Account Verification Pending</Text>
+            </View>
+            <Text style={styles.pendingText}>
+              Waiting for admin to verify and approve. You cannot receive bookings or toggle online status until your profile credentials and category have been reviewed by our administrative team.
+            </Text>
+            <View style={styles.pendingBadge}>
+              <Clock size={12} color="#92400E" />
+              <Text style={styles.pendingBadgeText}>Status: Pending Review</Text>
+            </View>
+          </View>
+        )}
+
         {/* Online / Offline Toggle Banner */}
-        <View style={styles.toggleCard}>
-          <View>
+        <View style={[styles.toggleCard, user?.isApproved === false && styles.toggleCardDisabled]}>
+          <View style={{ flex: 1, marginRight: 10 }}>
             <Text style={styles.toggleTitle}>
-              {isOnline ? 'You are Online & Accepting Jobs' : 'You are Currently Offline'}
+              {user?.isApproved === false
+                ? 'Approval Required to Go Online'
+                : isOnline
+                ? 'You are Online & Accepting Jobs'
+                : 'You are Currently Offline'}
             </Text>
             <Text style={styles.toggleSubtitle}>
-              {isOnline ? 'Nearby customers can discover and book you' : 'Switch online to receive new requests'}
+              {user?.isApproved === false
+                ? 'Waiting for admin to verify and approve your account.'
+                : isOnline
+                ? 'Nearby customers can discover and book you'
+                : 'Switch online to receive new requests'}
             </Text>
           </View>
           <Switch
-            value={isOnline}
-            onValueChange={setIsOnline}
+            value={user?.isApproved === false ? false : isOnline}
+            onValueChange={(val) => {
+              if (user?.isApproved === false) {
+                setAlertConfig({
+                  visible: true,
+                  title: 'Verification Pending',
+                  message: 'Waiting for admin to verify and approve before going online.',
+                  type: 'warning',
+                });
+                return;
+              }
+              setIsOnline(val);
+            }}
+            disabled={user?.isApproved === false}
             trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-            thumbColor={isOnline ? COLORS.primary : '#F3F4F6'}
+            thumbColor={isOnline && user?.isApproved !== false ? COLORS.primary : '#F3F4F6'}
           />
         </View>
 
@@ -264,13 +318,19 @@ export default function ProviderDashboard() {
           <Card style={styles.statCard}>
             <View style={styles.statHeader}>
               <Text style={styles.statLabel}>Customer Rating</Text>
-              <Star size={16} color="#FBBF24" fill="#FBBF24" />
+              <Star
+                size={16}
+                color="#FBBF24"
+                fill={Number(stats?.averageRating || 0) === 0 ? 'none' : '#FBBF24'}
+              />
             </View>
             <Text style={styles.statValue}>
-              {stats ? Number(stats.averageRating || 5.0).toFixed(1) : '5.0'}
+              {stats ? Number(stats.averageRating || 0).toFixed(1) : '0.0'}
             </Text>
             <Text style={styles.statGrowth}>
-              {stats?.totalReviews ? `from ${stats.totalReviews} reviews` : 'Verified Rating'}
+              {stats?.totalReviews && Number(stats.totalReviews) > 0
+                ? `from ${stats.totalReviews} reviews`
+                : 'New Provider (0 reviews)'}
             </Text>
           </Card>
         </View>
@@ -546,6 +606,46 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
   },
+  pendingBanner: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    borderRadius: RADIUS.lg,
+    padding: 16,
+    marginBottom: 16,
+  },
+  pendingHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  pendingTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#92400E',
+  },
+  pendingText: {
+    fontSize: 12,
+    color: '#78350F',
+    lineHeight: 18,
+    marginBottom: 10,
+  },
+  pendingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: '#FDE68A',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  pendingBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#92400E',
+  },
   toggleCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -556,6 +656,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#BFDBFE',
     marginBottom: 16,
+  },
+  toggleCardDisabled: {
+    backgroundColor: '#F9FAFB',
+    borderColor: '#E5E7EB',
+    opacity: 0.8,
   },
   toggleTitle: {
     fontSize: 13,

@@ -32,6 +32,11 @@ export const useSocket = (onEventReceived?: (event: string, data: any) => void) 
       if (onEventReceived) onEventReceived('booking_status_updated', data);
     });
 
+    socket.on('user_updated', (data) => {
+      console.log('[Socket] User updated:', data);
+      if (onEventReceived) onEventReceived('user_updated', data);
+    });
+
     return () => {
       socket.disconnect();
     };

@@ -1,7 +1,7 @@
 import api from './api';
 
 export const providerService = {
-  getNearby: async (params?: { lat?: number; lng?: number; category?: string; radius?: number }) => {
+  getNearby: async (params?: { lat?: number; lng?: number; category?: string; radius?: number; search?: string }) => {
     const res = await api.get('/provider/nearby', { params });
     return res.data.data;
   },

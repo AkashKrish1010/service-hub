@@ -47,6 +47,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [signupEmail, setSignupEmail] = useState('');
   const [signupPhone, setSignupPhone] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
+  const [signupCategory, setSignupCategory] = useState('Plumbing');
 
   const [loading, setLoading] = useState(false);
 
@@ -92,10 +93,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         phone: formattedPhone,
         password: signupPassword.trim(),
         role: finalRole,
-      });
+        category: finalRole === 'provider' ? signupCategory : undefined,
+      } as any);
       showToast(
         finalRole === 'provider'
-          ? 'Registration successful! Your provider profile will be reviewed by admin.'
+          ? 'Registration submitted! Your provider profile is pending admin approval.'
           : 'Account created successfully! Welcome to Service Hub.',
         'success'
       );
@@ -270,6 +272,33 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 />
               </div>
             </div>
+
+            {role === 'provider' && (
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Primary Service Category
+                </label>
+                <div className="relative">
+                  <select
+                    value={signupCategory}
+                    onChange={(e) => setSignupCategory(e.target.value)}
+                    className="w-full px-3.5 py-2 rounded-xl border border-borderSubtle bg-slate-50/50 text-sm font-semibold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
+                  >
+                    <option value="Plumbing">Plumbing</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Cleaning">Cleaning</option>
+                    <option value="Carpentry">Carpentry</option>
+                    <option value="Appliances">Appliances</option>
+                    <option value="Painting">Painting</option>
+                    <option value="Gardening">Gardening</option>
+                    <option value="General Services">General Services</option>
+                  </select>
+                </div>
+                <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200/60 rounded-lg p-2 mt-2 leading-relaxed">
+                  Notice: Provider registrations require administrator approval before public dispatch is enabled.
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">

@@ -16,15 +16,22 @@ export const Rating: React.FC<RatingProps> = ({
   size = 14,
   showReviews = true,
 }) => {
+  const numericScore = typeof score === 'number' ? score : Number(score || 0);
+  const isNew = numericScore === 0 && (!reviewsCount || reviewsCount === 0);
+
   return (
     <View style={styles.container}>
-      <Star size={size} color="#FBBF24" fill="#FBBF24" />
+      <Star
+        size={size}
+        color="#FBBF24"
+        fill={isNew ? 'none' : '#FBBF24'}
+      />
       <Text style={[styles.score, { fontSize: size }]}>
-        {score ? score.toFixed(1) : '5.0'}
+        {isNew ? '0.0' : numericScore.toFixed(1)}
       </Text>
-      {showReviews && reviewsCount !== undefined && (
+      {showReviews && (
         <Text style={[styles.reviews, { fontSize: size - 1 }]}>
-          ({reviewsCount} reviews)
+          {isNew ? '(New)' : `(${reviewsCount || 0} reviews)`}
         </Text>
       )}
     </View>
