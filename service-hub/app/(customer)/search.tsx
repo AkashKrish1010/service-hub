@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -29,18 +29,43 @@ import {
   Map,
   ShieldCheck,
   Zap,
+  AlertCircle,
 } from 'lucide-react-native';
+
+// --- Distance helpers ---
+const NEARBY_RADIUS_KM = 15; // providers within 15km are "nearby"
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function formatDistanceLabel(km: number): string {
+  if (km < 1) return `${Math.round(km * 1000)} m away`;
+  return `${km.toFixed(1)} km away`;
+}
 
 export default function SearchScreen() {
   const router = useRouter();
   const { category: initialCategory } = useLocalSearchParams<{ category?: string }>();
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory || 'All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
   const [providers, setProviders] = useState<any[]>([]);
   const [selectedProvider, setSelectedProvider] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [userCoords, setUserCoords] = useState<{ lat: number; lng: number }>({ lat: 13.0418, lng: 80.2337 });
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [categories, setCategories] = useState<string[]>([
     'All',
     'Plumbing',
@@ -49,6 +74,15 @@ export default function SearchScreen() {
     'Carpentry',
     'Appliances',
   ]);
+
+  // Debounce search input
+  const handleSearchChange = (text: string) => {
+    setSearchQuery(text);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedQuery(text);
+    }, 400);
+  };
 
   useEffect(() => {
     categoryService.getAll().then((data) => {
@@ -71,18 +105,31 @@ export default function SearchScreen() {
 
   useEffect(() => {
     fetchProviders();
-  }, [selectedCategory, searchQuery, userCoords]);
+  }, [selectedCategory, debouncedQuery, userCoords]);
 
   const fetchProviders = async () => {
     setLoading(true);
     try {
-      const data = await providerService.getNearby({
+      const trimmedQuery = debouncedQuery.trim();
+
+      // When user is searching by location/text: bypass geo radius so ALL matching
+      // providers show (even ones >15km away). Distance badge will indicate travel.
+      // When no search query: use geo radius to find nearby providers.
+      const params: any = {
         category: selectedCategory === 'All' ? undefined : selectedCategory,
-        lat: userCoords.lat,
-        lng: userCoords.lng,
-        radius: 60,
-        search: searchQuery.trim() || undefined,
-      });
+      };
+
+      if (trimmedQuery) {
+        // Location/text search — no geo filter, search all approved providers
+        params.search = trimmedQuery;
+      } else {
+        // Nearby-only mode: 15km radius from user
+        params.lat = userCoords.lat;
+        params.lng = userCoords.lng;
+        params.radius = NEARBY_RADIUS_KM;
+      }
+
+      const data = await providerService.getNearby(params);
       setProviders(data || []);
       if (data && data.length > 0) {
         setSelectedProvider(data[0]);
@@ -96,7 +143,24 @@ export default function SearchScreen() {
     }
   };
 
-  const mapProviders: MapProvider[] = providers.map((p) => ({
+  // Attach computed distance to each provider based on user coords
+  const providersWithDistance = providers.map((p) => {
+    const pLat = p.location?.coordinates ? p.location.coordinates[1] : null;
+    const pLng = p.location?.coordinates ? p.location.coordinates[0] : null;
+    const distanceKm = pLat !== null && pLng !== null
+      ? haversineKm(userCoords.lat, userCoords.lng, pLat, pLng)
+      : null;
+    return { ...p, _distanceKm: distanceKm };
+  });
+
+  // Sort: nearby first, then far providers
+  const sortedProviders = [...providersWithDistance].sort((a, b) => {
+    const dA = a._distanceKm ?? 9999;
+    const dB = b._distanceKm ?? 9999;
+    return dA - dB;
+  });
+
+  const mapProviders: MapProvider[] = sortedProviders.map((p) => ({
     id: p._id,
     name: p.userId?.name || 'Verified Pro',
     category: p.category,
@@ -106,9 +170,10 @@ export default function SearchScreen() {
     lng: p.location?.coordinates ? p.location.coordinates[0] : userCoords.lng,
   }));
 
-  const filteredProviders = providers.filter((p) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
+  // Client-side filter: when user types, filter results on the client too (belt + suspenders)
+  const filteredProviders = sortedProviders.filter((p) => {
+    if (!debouncedQuery.trim()) return true;
+    const q = debouncedQuery.toLowerCase();
     const nameMatch = (p.userId?.name || '').toLowerCase().includes(q);
     const catMatch = (p.category || '').toLowerCase().includes(q);
     const addressMatch = (p.location?.address || '').toLowerCase().includes(q);
@@ -126,10 +191,10 @@ export default function SearchScreen() {
             <SearchIcon size={18} color={COLORS.textMuted} />
             <TextInput
               style={styles.input}
-              placeholder="Search by location or service..."
+              placeholder="Search by name, location, or service..."
               placeholderTextColor={COLORS.textMuted}
               value={searchQuery}
-              onChangeText={setSearchQuery}
+              onChangeText={handleSearchChange}
             />
           </View>
           <TouchableOpacity
@@ -190,9 +255,26 @@ export default function SearchScreen() {
           />
 
           {/* Bottom Selected Provider Sheet */}
-          {selectedProvider && (
+          {selectedProvider && (() => {
+            const selDistKm = (() => {
+              const pLat = selectedProvider.location?.coordinates?.[1];
+              const pLng = selectedProvider.location?.coordinates?.[0];
+              return pLat && pLng ? haversineKm(userCoords.lat, userCoords.lng, pLat, pLng) : null;
+            })();
+            const isFar = selDistKm !== null && selDistKm > NEARBY_RADIUS_KM;
+            return (
             <View style={styles.bottomSheet}>
               <View style={styles.sheetHandle} />
+
+              {/* Travel notice banner for far providers */}
+              {isFar && (
+                <View style={styles.travelNoticeBanner}>
+                  <AlertCircle size={13} color="#92400E" />
+                  <Text style={styles.travelNoticeText}>
+                    Provider is {selDistKm!.toFixed(1)} km away — travel expenses may apply
+                  </Text>
+                </View>
+              )}
 
               <View style={styles.sheetHeader}>
                 <Avatar
@@ -210,25 +292,21 @@ export default function SearchScreen() {
                   </View>
                   <Text style={styles.sheetCategory}>{selectedProvider.category}</Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Rating score={selectedProvider.averageRating} size={12} />
-                    <View style={styles.distanceChip}>
-                      <MapPin size={11} color={COLORS.textMuted} />
-                      <Text style={styles.distanceText}>0.8 km away</Text>
-                    </View>
+                    <Rating score={selectedProvider.averageRating} reviewsCount={selectedProvider.totalReviews} size={12} />
+                    {selDistKm !== null && (
+                      <View style={[styles.distanceChip, isFar && styles.distanceChipFar]}>
+                        <MapPin size={11} color={isFar ? '#D97706' : COLORS.textMuted} />
+                        <Text style={[styles.distanceText, isFar && styles.distanceTextFar]}>
+                          {formatDistanceLabel(selDistKm)}
+                        </Text>
+                      </View>
+                    )}
                   </View>
-                </View>
-              </View>
-
-              {/* Specialization Tags */}
-              <View style={styles.tagsRow}>
-                <View style={styles.tag}>
-                  <Text style={styles.tagText}>Pipe Repair</Text>
-                </View>
-                <View style={styles.tag}>
-                  <Text style={styles.tagText}>Snaking</Text>
-                </View>
-                <View style={styles.tag}>
-                  <Text style={styles.tagText}>Emergency</Text>
+                  {selectedProvider.location?.address ? (
+                    <Text style={styles.sheetAddress} numberOfLines={1}>
+                      📍 {selectedProvider.location.address}
+                    </Text>
+                  ) : null}
                 </View>
               </View>
 
@@ -270,38 +348,55 @@ export default function SearchScreen() {
                 </View>
               </View>
             </View>
-          )}
+            );
+          })()}
         </View>
       ) : (
         <FlatList
           data={filteredProviders}
           keyExtractor={(item) => item._id}
           contentContainerStyle={styles.listContainer}
-          renderItem={({ item }) => (
-            <ProviderCard
-              provider={{
-                ...item,
-                distance: '0.8 km away',
-              }}
-              onPress={() => router.push(`/provider/${item._id}`)}
-              onBookNow={() =>
-                router.push({
-                  pathname: '/booking/new',
-                  params: {
-                    providerId: item.userId?._id || item._id,
-                    providerName: item.userId?.name || 'Verified Pro',
-                    category: item.category,
-                    rate: item.hourlyRate,
-                  },
-                })
-              }
-            />
-          )}
+          renderItem={({ item }) => {
+            const isFar = item._distanceKm !== null && item._distanceKm > NEARBY_RADIUS_KM;
+            const distLabel = item._distanceKm !== null ? formatDistanceLabel(item._distanceKm) : undefined;
+            return (
+              <View>
+                {isFar && (
+                  <View style={styles.travelNoticeCard}>
+                    <AlertCircle size={12} color="#92400E" />
+                    <Text style={styles.travelNoticeCardText}>
+                      {item._distanceKm!.toFixed(1)} km away — travel charges may apply
+                    </Text>
+                  </View>
+                )}
+                <ProviderCard
+                  provider={{
+                    ...item,
+                    distance: distLabel,
+                  }}
+                  onPress={() => router.push(`/provider/${item._id}`)}
+                  onBookNow={() =>
+                    router.push({
+                      pathname: '/booking/new',
+                      params: {
+                        providerId: item.userId?._id || item._id,
+                        providerName: item.userId?.name || 'Verified Pro',
+                        category: item.category,
+                        rate: item.hourlyRate,
+                      },
+                    })
+                  }
+                />
+              </View>
+            );
+          }}
           ListEmptyComponent={
             <View style={styles.emptyList}>
               <Text style={styles.emptyListTitle}>No Providers Found</Text>
               <Text style={styles.emptyListSubtitle}>
-                No active service providers matched your category filter.
+                {debouncedQuery.trim()
+                  ? `No providers found for "${debouncedQuery}". Try a different location or service.`
+                  : 'No active service providers found in your area.'}
               </Text>
             </View>
           }
@@ -507,5 +602,57 @@ const styles = StyleSheet.create({
     color: COLORS.textMuted,
     textAlign: 'center',
     marginTop: 6,
+  },
+  travelNoticeBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    borderRadius: RADIUS.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginBottom: 10,
+  },
+  travelNoticeText: {
+    fontSize: 11,
+    color: '#92400E',
+    fontWeight: '600',
+    flexShrink: 1,
+  },
+  travelNoticeCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#FFFBEB',
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    borderRadius: RADIUS.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    marginBottom: 4,
+    marginHorizontal: 0,
+  },
+  travelNoticeCardText: {
+    fontSize: 11,
+    color: '#78350F',
+    fontWeight: '600',
+    flexShrink: 1,
+  },
+  distanceChipFar: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  distanceTextFar: {
+    color: '#D97706',
+    fontWeight: '600',
+  },
+  sheetAddress: {
+    fontSize: 11,
+    color: COLORS.textMuted,
+    marginTop: 2,
   },
 });
