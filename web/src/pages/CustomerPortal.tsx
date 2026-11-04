@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Search,
   Filter,
@@ -18,10 +18,29 @@ import {
   Send,
   MessageSquare,
   Lock,
+  Locate,
+  Navigation,
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+
+// Nearby boundary: within 15 km is considered local
+const NEARBY_RADIUS_KM = 15;
+
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 interface CustomerPortalProps {
   initialCategory?: string;
@@ -46,14 +65,19 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [userCoords, setUserCoords] = useState<{ lat: number; lng: number }>({ lat: 13.0418, lng: 80.2337 });
+  const [detectedLocationName, setDetectedLocationName] = useState<string>(user?.address || 'Chennai, Tamil Nadu');
+  const [locating, setLocating] = useState(false);
+  const debounceTimer = useRef<any>(null);
 
   // Booking Modal State
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
   const [targetProvider, setTargetProvider] = useState<any>(null);
   const [scheduledDate, setScheduledDate] = useState('');
   const [scheduledTime, setScheduledTime] = useState('10:00 AM');
-  const [serviceAddress, setServiceAddress] = useState(user?.address || '123 Downtown Street, Apt 4B');
+  const [serviceAddress, setServiceAddress] = useState(user?.address || 'Chennai, Tamil Nadu');
   const [description, setDescription] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
   const [bookingSubmitting, setBookingSubmitting] = useState(false);
@@ -83,10 +107,60 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordUpdating, setPasswordUpdating] = useState(false);
 
+  const handleSearchChange = (val: string) => {
+    setSearchQuery(val);
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setDebouncedQuery(val);
+    }, 400);
+  };
+
+  const detectLocation = () => {
+    if (!navigator.geolocation) {
+      setDetectedLocationName(user?.address || 'Chennai, Tamil Nadu');
+      return;
+    }
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserCoords(coords);
+        try {
+          const res = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${coords.lat}&lon=${coords.lng}`
+          );
+          const data = await res.json();
+          const addr = data.address;
+          const place = [
+            addr?.suburb || addr?.neighbourhood || addr?.residential || addr?.city_district,
+            addr?.city || addr?.state_district || addr?.town,
+          ].filter(Boolean).join(', ');
+          if (place) {
+            setDetectedLocationName(place);
+            setServiceAddress(place);
+          }
+        } catch {
+          setDetectedLocationName(user?.address || 'Chennai, Tamil Nadu');
+        } finally {
+          setLocating(false);
+        }
+      },
+      () => {
+        setLocating(false);
+        setDetectedLocationName(user?.address || 'Chennai, Tamil Nadu');
+      },
+      { timeout: 8000 }
+    );
+  };
+
   useEffect(() => {
-    fetchProviders();
+    detectLocation();
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    fetchProviders();
+  }, [debouncedQuery, userCoords]);
 
   useEffect(() => {
     if (selectedProviderForBooking) {
@@ -107,9 +181,18 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
   const fetchProviders = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/providers/nearby', {
-        params: { lat: 13.0418, lng: 80.2337, radius: 100 },
-      });
+      const trimmed = debouncedQuery.trim();
+      const params: any = {};
+      if (trimmed) {
+        // Query by text / location (e.g. "tnagar", "mangadu") without strict geo radius
+        params.search = trimmed;
+      } else {
+        // Default nearby browse: within 15 km
+        params.lat = userCoords.lat;
+        params.lng = userCoords.lng;
+        params.radius = NEARBY_RADIUS_KM;
+      }
+      const res = await api.get('/providers/nearby', { params });
       setProviders(res.data.data || []);
     } catch (e) {
       console.warn('Could not load providers', e);
@@ -290,16 +373,39 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     }
   };
 
-  // Filtered providers
-  const filteredProviders = providers.filter((p) => {
+  // Attach distance from customer coordinates to each provider
+  const providersWithDistance = providers.map((p) => {
+    const pLat = p.location?.coordinates?.[1];
+    const pLng = p.location?.coordinates?.[0];
+    const distKm =
+      pLat !== undefined && pLng !== undefined && pLat !== null && pLng !== null
+        ? haversineKm(userCoords.lat, userCoords.lng, pLat, pLng)
+        : null;
+    return { ...p, _distanceKm: distKm };
+  });
+
+  // Sort providers: nearest first
+  const sortedProviders = [...providersWithDistance].sort((a, b) => {
+    const dA = a._distanceKm ?? 9999;
+    const dB = b._distanceKm ?? 9999;
+    return dA - dB;
+  });
+
+  // Filtered providers with full address, category, bio, and name matching
+  const filteredProviders = sortedProviders.filter((p) => {
     const matchCategory =
       selectedCategory === 'All' || p.category?.toLowerCase() === selectedCategory.toLowerCase();
-    const name = p.userId?.name || '';
+    const q = debouncedQuery.toLowerCase().trim();
+    const name = (p.userId?.name || '').toLowerCase();
+    const address = (p.location?.address || '').toLowerCase();
+    const bio = (p.bio || '').toLowerCase();
+    const cat = (p.category || '').toLowerCase();
     const matchSearch =
-      !searchQuery.trim() ||
-      name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.bio?.toLowerCase().includes(searchQuery.toLowerCase());
+      !q ||
+      name.includes(q) ||
+      cat.includes(q) ||
+      bio.includes(q) ||
+      address.includes(q);
     return matchCategory && matchSearch;
   });
 
@@ -374,6 +480,27 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
             </button>
           </div>
 
+          {/* Service Area GPS Sub-Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white px-5 py-3.5 rounded-2xl border border-borderSubtle mb-6 shadow-xs">
+            <div className="flex items-center gap-3 text-xs text-slate-700">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-primary border border-blue-100 flex items-center justify-center shrink-0 shadow-2xs">
+                <MapPin className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Service Location</span>
+                <span className="font-extrabold text-slate-900 text-sm truncate block max-w-md">{detectedLocationName}</span>
+              </div>
+            </div>
+            <button
+              onClick={detectLocation}
+              disabled={locating}
+              className="px-3.5 py-2 rounded-xl border border-blue-200 bg-blue-50/80 hover:bg-blue-100/80 text-primary text-xs font-bold flex items-center gap-2 transition-colors cursor-pointer self-start sm:self-auto shrink-0"
+            >
+              <Locate className={`w-3.5 h-3.5 ${locating ? 'animate-spin' : ''}`} />
+              <span>{locating ? 'Locating...' : 'Use My GPS Location'}</span>
+            </button>
+          </div>
+
           {/* Search & Category Filter Toolbar */}
           <div className="bg-white p-4 rounded-2xl border border-borderSubtle shadow-xs mb-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
             {/* Search Input */}
@@ -382,8 +509,8 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by provider name, specialty, or keywords..."
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search by provider, specialty, or location (e.g. T. Nagar, Mangadu)..."
                 className="w-full pl-10 pr-4 py-2 rounded-xl border border-borderSubtle bg-slate-50 text-sm text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
               />
             </div>
@@ -400,7 +527,7 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               >
                 All
               </button>
-              {['Plumbing', 'Electrical', 'Cleaning', 'Carpentry', 'Appliances', 'Painting'].map((cat) => (
+              {['Plumbing', 'Electrical', 'Cleaning', 'Carpentry', 'Appliances', 'Painting', 'Gardening', 'General Services'].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
@@ -427,12 +554,15 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
               <User className="w-12 h-12 text-slate-300 mx-auto mb-3" />
               <h3 className="text-base font-bold text-slate-900">No technicians found</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
-                No verified providers matched your search criteria. Try selecting another category or clearing your search.
+                {debouncedQuery.trim()
+                  ? `No verified providers found matching "${debouncedQuery}". Try another keyword or location.`
+                  : 'No verified providers matched your search criteria. Try selecting another category or clearing your search.'}
               </p>
               <button
                 onClick={() => {
                   setSelectedCategory('All');
                   setSearchQuery('');
+                  setDebouncedQuery('');
                 }}
                 className="mt-4 px-4 py-2 rounded-xl bg-blue-50 text-primary text-xs font-bold hover:bg-blue-100 transition-colors cursor-pointer"
               >
@@ -445,12 +575,24 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                 const name = p.userId?.name || 'Verified Professional';
                 const img = p.userId?.profileImage;
                 const isOnline = p.isAvailable !== false;
+                const distKm = p._distanceKm;
+                const isFar = distKm !== null && distKm !== undefined && distKm > NEARBY_RADIUS_KM;
+                const hasZeroReviews = !p.totalReviews || Number(p.totalReviews) === 0;
+
                 return (
                   <div
                     key={idx}
-                    className="bg-white rounded-2xl p-6 border border-borderSubtle card-hover flex flex-col justify-between shadow-card"
+                    className="bg-white rounded-2xl p-6 border border-borderSubtle card-hover flex flex-col justify-between shadow-card relative"
                   >
                     <div>
+                      {/* Far provider travel notice */}
+                      {isFar && (
+                        <div className="bg-amber-50 border border-amber-200/90 rounded-xl px-3 py-1.5 mb-3.5 flex items-center gap-1.5 text-[11px] font-semibold text-amber-800">
+                          <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                          <span>{distKm?.toFixed(1)} km away — travel expenses may apply</span>
+                        </div>
+                      )}
+
                       <div className="flex items-center gap-3.5 mb-4">
                         <div className="w-14 h-14 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-primary overflow-hidden shrink-0 relative">
                           {img ? (
@@ -469,12 +611,24 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                           </div>
                           <p className="text-xs text-slate-500">{p.category} Specialist</p>
                           <div className="flex items-center gap-2 mt-1">
-                            <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
-                              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                              <span>{p.averageRating || 4.8}</span>
-                            </div>
+                            {hasZeroReviews ? (
+                              <div className="flex items-center gap-1 text-xs font-bold text-slate-600">
+                                <Star className="w-3.5 h-3.5 text-amber-400 stroke-1 fill-none" />
+                                <span>0.0</span>
+                                <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-md font-bold">
+                                  New
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
+                                <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                                <span>{Number(p.averageRating || 0).toFixed(1)}</span>
+                              </div>
+                            )}
                             <span className="text-slate-300">•</span>
-                            <span className="text-xs text-slate-500">{p.totalReviews || 94} reviews</span>
+                            <span className="text-xs text-slate-500">
+                              {p.totalReviews ? `${p.totalReviews} reviews` : '0 reviews'}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -483,9 +637,20 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
                         {p.bio || 'Experienced technician providing certified repair and installation services.'}
                       </p>
 
-                      <div className="flex items-center gap-2 text-xs text-slate-500 mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                        <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                        <span className="truncate">{p.location?.address || 'Metro Service Area'}</span>
+                      <div className="flex items-center justify-between text-xs text-slate-500 mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                        <div className="flex items-center gap-1.5 truncate flex-1 min-w-0 mr-2">
+                          <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
+                          <span className="truncate">{p.location?.address || 'Chennai, Tamil Nadu'}</span>
+                        </div>
+                        {distKm !== null && distKm !== undefined && (
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-bold shrink-0 ${
+                              isFar ? 'bg-amber-100 text-amber-800' : 'bg-blue-50 text-primary border border-blue-100'
+                            }`}
+                          >
+                            {distKm < 1 ? `${Math.round(distKm * 1000)} m` : `${distKm.toFixed(1)} km`}
+                          </span>
+                        )}
                       </div>
                     </div>
 

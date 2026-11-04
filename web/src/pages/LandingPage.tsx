@@ -492,12 +492,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         </div>
                         <p className="text-xs text-slate-500">{p.category} Specialist</p>
                         <div className="flex items-center gap-2 mt-1">
-                          <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
-                            <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                            <span>{p.averageRating || 4.9}</span>
-                          </div>
+                          {Number(p.averageRating || 0) === 0 ? (
+                            <div className="flex items-center gap-1 text-xs font-bold text-slate-600">
+                              <Star className="w-3.5 h-3.5 text-amber-400 stroke-1 fill-none" />
+                              <span>0.0</span>
+                              <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-md font-bold">
+                                New
+                              </span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
+                              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                              <span>{Number(p.averageRating).toFixed(1)}</span>
+                            </div>
+                          )}
                           <span className="text-slate-300">•</span>
-                          <span className="text-xs text-slate-500">{p.totalReviews || 94} reviews</span>
+                          <span className="text-xs text-slate-500">
+                            {p.totalReviews ? `${p.totalReviews} reviews` : '0 reviews'}
+                          </span>
                         </div>
                       </div>
                     </div>

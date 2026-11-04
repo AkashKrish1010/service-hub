@@ -1,8 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { io, Socket } from 'socket.io-client';
 import api from '../services/api';
 
 export interface User {
   id: string;
+  _id?: string;
   name: string;
   email: string;
   phone?: string;
@@ -111,6 +113,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // ignore
     }
   };
+
+  // Real-time socket sync for approval & user state changes
+  useEffect(() => {
+    const userId = user?.id || (user as any)?._id;
+    if (!userId) return;
+
+    const socketUrl = (import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '');
+    const socket: Socket = io(socketUrl, {
+      transports: ['websocket', 'polling'],
+    });
+
+    socket.on('connect', () => {
+      socket.emit('join_user_room', userId);
+    });
+
+    socket.on('user_updated', () => {
+      refreshUser();
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [user?.id, (user as any)?._id]);
 
   return (
     <AuthContext.Provider

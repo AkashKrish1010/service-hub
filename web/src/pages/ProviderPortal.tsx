@@ -8,6 +8,7 @@ import {
   MapPin,
   Calendar,
   AlertCircle,
+  AlertTriangle,
   ThumbsUp,
   Lightbulb,
   X,
@@ -15,6 +16,7 @@ import {
   Zap,
   Save,
   User,
+  ShieldAlert,
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -24,13 +26,15 @@ export const ProviderPortal: React.FC = () => {
   const { user, refreshUser } = useAuth();
   const { showToast } = useToast();
 
+  const isApproved = user?.isApproved !== false;
   const [activeTab, setActiveTab] = useState<'console' | 'profile'>('console');
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(isApproved);
   const [stats, setStats] = useState<any>({
-    totalEarnings: 2840,
-    activeBookings: 2,
-    completedBookings: 18,
-    averageRating: 4.8,
+    totalEarnings: 0,
+    activeBookings: 0,
+    completedBookings: 0,
+    averageRating: 0,
+    totalReviews: 0,
   });
 
   const [pendingBookings, setPendingBookings] = useState<any[]>([]);
@@ -54,12 +58,19 @@ export const ProviderPortal: React.FC = () => {
     fetchAiCoach();
   }, []);
 
+  useEffect(() => {
+    if (user?.isApproved === false) {
+      setIsOnline(false);
+    }
+  }, [user?.isApproved]);
+
   const fetchDashboardData = async () => {
     setLoading(true);
     try {
+      await refreshUser().catch(() => null);
       const [statsRes, bookingsRes] = await Promise.all([
-        api.get('/provider/stats').catch(() => null),
-        api.get('/provider/bookings').catch(() => null),
+        api.get('/provider/dashboard-stats').catch(() => null),
+        api.get('/bookings/provider').catch(() => null),
       ]);
 
       if (statsRes?.data?.data) {
@@ -124,13 +135,52 @@ export const ProviderPortal: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 min-h-[80vh]">
+      {/* Pending Admin Approval Banner */}
+      {user?.isApproved === false && (
+        <div className="bg-amber-50 border border-amber-300 rounded-3xl p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm animate-in fade-in duration-200">
+          <div className="flex items-start gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-amber-100 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0 shadow-xs">
+              <ShieldAlert className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-extrabold text-amber-900">Account Verification Pending</h3>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-amber-200/80 text-amber-900 border border-amber-300/60">
+                  Waiting for Admin Approval
+                </span>
+              </div>
+              <p className="text-xs text-amber-800/90 mt-1 max-w-2xl leading-relaxed">
+                Waiting for admin to verify and approve. You cannot receive bookings or toggle online status until your profile credentials and trade category have been approved by our administrative team.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              refreshUser();
+              fetchDashboardData();
+              showToast('Refreshed account approval status.', 'info');
+            }}
+            className="px-4 py-2 rounded-xl bg-amber-200/70 hover:bg-amber-200 text-amber-900 text-xs font-bold transition-colors cursor-pointer shrink-0 flex items-center gap-1.5"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Check Approval Status</span>
+          </button>
+        </div>
+      )}
+
       {/* Top Console Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-borderSubtle mb-8">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Provider Console</h1>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-100 text-primary border border-blue-200">
-              Verified Partner
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${
+                user?.isApproved === false
+                  ? 'bg-amber-50 text-amber-700 border-amber-200'
+                  : 'bg-blue-100 text-primary border-blue-200'
+              }`}
+            >
+              {user?.isApproved === false ? 'Pending Approval' : 'Verified Partner'}
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -141,12 +191,34 @@ export const ProviderPortal: React.FC = () => {
         {/* Action Controls */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 p-1.5 px-3 bg-white rounded-2xl border border-borderSubtle shadow-xs">
-            <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
-            <span className="text-xs font-bold text-slate-700">{isOnline ? 'Accepting Jobs' : 'Offline'}</span>
+            <span
+              className={`w-2.5 h-2.5 rounded-full ${
+                user?.isApproved === false ? 'bg-amber-400' : isOnline ? 'bg-emerald-500' : 'bg-slate-400'
+              }`}
+            ></span>
+            <span className="text-xs font-bold text-slate-700">
+              {user?.isApproved === false
+                ? 'Approval Required'
+                : isOnline
+                ? 'Accepting Jobs'
+                : 'Offline'}
+            </span>
             <button
-              onClick={() => setIsOnline(!isOnline)}
+              onClick={() => {
+                if (user?.isApproved === false) {
+                  showToast('Waiting for admin to verify and approve before going online.', 'error');
+                  return;
+                }
+                setIsOnline(!isOnline);
+              }}
+              disabled={user?.isApproved === false}
+              title={user?.isApproved === false ? 'Requires admin approval' : 'Toggle online status'}
               className={`ml-2 px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                isOnline ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'bg-slate-100 text-slate-600'
+                user?.isApproved === false
+                  ? 'bg-slate-100 text-slate-400 cursor-not-allowed opacity-60'
+                  : isOnline
+                  ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                  : 'bg-slate-100 text-slate-600'
               }`}
             >
               Toggle
@@ -195,22 +267,34 @@ export const ProviderPortal: React.FC = () => {
 
             <div className="bg-white p-6 rounded-2xl border border-borderSubtle shadow-card">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Completed Jobs</span>
-              <p className="text-2xl font-black text-emerald-600 mt-1">{stats.completedBookings || 18}</p>
+              <p className="text-2xl font-black text-emerald-600 mt-1">{stats.completedBookings || 0}</p>
               <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                <span>100% On-Time Completion</span>
+                <span>Lifetime Total</span>
               </div>
             </div>
 
             <div className="bg-white p-6 rounded-2xl border border-borderSubtle shadow-card">
               <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Average Rating</span>
               <div className="flex items-center gap-2 mt-1">
-                <p className="text-2xl font-black text-slate-900">{stats.averageRating || 4.9}</p>
+                <p className="text-2xl font-black text-slate-900">
+                  {stats.averageRating ? Number(stats.averageRating).toFixed(1) : '0.0'}
+                </p>
                 <div className="flex text-amber-400">
-                  <Star className="w-5 h-5 fill-amber-400" />
+                  <Star
+                    className={`w-5 h-5 ${
+                      Number(stats.averageRating || 0) === 0
+                        ? 'text-amber-400 stroke-1 fill-none'
+                        : 'fill-amber-400 text-amber-400'
+                    }`}
+                  />
                 </div>
               </div>
-              <p className="text-xs text-slate-500 mt-2">Top 5% Service Provider</p>
+              <p className="text-xs text-slate-500 mt-2">
+                {stats.totalReviews && Number(stats.totalReviews) > 0
+                  ? `from ${stats.totalReviews} reviews`
+                  : 'New Provider (0 reviews)'}
+              </p>
             </div>
           </div>
 
@@ -417,6 +501,8 @@ export const ProviderPortal: React.FC = () => {
                 <option value="Carpentry">Carpentry</option>
                 <option value="Appliances">Appliances</option>
                 <option value="Painting">Painting</option>
+                <option value="Gardening">Gardening</option>
+                <option value="General Services">General Services</option>
               </select>
             </div>
 
