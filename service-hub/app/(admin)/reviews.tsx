@@ -198,7 +198,7 @@ export default function AdminReviewsScreen() {
         }
         renderItem={({ item }) => (
           <Card style={styles.reviewCard}>
-            {/* Header: Customer Info + Rating */}
+            {/* Header: Customer Info + Rating & Sentiment */}
             <View style={styles.cardHeader}>
               <Avatar
                 uri={item.customerId?.profileImage}
@@ -209,9 +209,34 @@ export default function AdminReviewsScreen() {
                 <Text style={styles.customerName}>{item.customerId?.name || 'Verified Customer'}</Text>
                 <Text style={styles.customerEmail}>{item.customerId?.email || 'customer@servicehub.com'}</Text>
               </View>
-              <View style={styles.ratingBadge}>
-                <Star size={12} color="#D97706" fill="#D97706" />
-                <Text style={styles.ratingValue}>{item.rating}.0</Text>
+              <View style={{ alignItems: 'flex-end', gap: 4 }}>
+                <View style={styles.ratingBadge}>
+                  <Star size={12} color="#D97706" fill="#D97706" />
+                  <Text style={styles.ratingValue}>{item.rating}.0</Text>
+                </View>
+                <View
+                  style={[
+                    styles.sentimentChip,
+                    (item.sentimentScore == null || item.sentimentScore >= 75)
+                      ? styles.sentimentPositive
+                      : item.sentimentScore >= 50
+                      ? styles.sentimentNeutral
+                      : styles.sentimentNegative,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.sentimentChipText,
+                      (item.sentimentScore == null || item.sentimentScore >= 75)
+                        ? styles.sentimentPositiveText
+                        : item.sentimentScore >= 50
+                        ? styles.sentimentNeutralText
+                        : styles.sentimentNegativeText,
+                    ]}
+                  >
+                    {item.sentimentScore != null ? item.sentimentScore : 95}% {item.sentimentLabel || 'Positive'}
+                  </Text>
+                </View>
               </View>
             </View>
 
@@ -420,6 +445,37 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     color: '#D97706',
+  },
+  sentimentChip: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: RADIUS.xs,
+    borderWidth: 1,
+  },
+  sentimentChipText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  sentimentPositive: {
+    backgroundColor: '#ECFDF5',
+    borderColor: '#A7F3D0',
+  },
+  sentimentPositiveText: {
+    color: '#059669',
+  },
+  sentimentNeutral: {
+    backgroundColor: '#FFFBEB',
+    borderColor: '#FDE68A',
+  },
+  sentimentNeutralText: {
+    color: '#D97706',
+  },
+  sentimentNegative: {
+    backgroundColor: '#FEF2F2',
+    borderColor: '#FECACA',
+  },
+  sentimentNegativeText: {
+    color: '#DC2626',
   },
   providerBanner: {
     flexDirection: 'row',

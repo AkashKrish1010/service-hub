@@ -360,25 +360,63 @@ export default function ProviderDashboard() {
               <Zap size={11} color={COLORS.primary} />
               <Text style={styles.aiModelText}>Pro Insights</Text>
             </View>
-            {aiCoach?.sentiment && (
+            {(aiCoach?.sentiment || aiCoach?.sentimentPercentage != null) && (
               <View
                 style={[
                   styles.sentimentBadge,
-                  aiCoach.sentiment === 'Positive' ? styles.sentimentPositive : styles.sentimentNeutral,
+                  (aiCoach.sentimentPercentage != null ? aiCoach.sentimentPercentage >= 75 : aiCoach.sentiment === 'Positive')
+                    ? styles.sentimentPositive
+                    : styles.sentimentNeutral,
                 ]}
               >
-                <Award size={11} color={aiCoach.sentiment === 'Positive' ? '#059669' : '#D97706'} />
+                <Award
+                  size={11}
+                  color={
+                    (aiCoach.sentimentPercentage != null ? aiCoach.sentimentPercentage >= 75 : aiCoach.sentiment === 'Positive')
+                      ? '#059669'
+                      : '#D97706'
+                  }
+                />
                 <Text
                   style={[
                     styles.sentimentText,
-                    aiCoach.sentiment === 'Positive' ? styles.sentimentPositiveText : styles.sentimentNeutralText,
+                    (aiCoach.sentimentPercentage != null ? aiCoach.sentimentPercentage >= 75 : aiCoach.sentiment === 'Positive')
+                      ? styles.sentimentPositiveText
+                      : styles.sentimentNeutralText,
                   ]}
                 >
-                  {aiCoach.sentiment} Reputation
+                  {aiCoach.sentimentPercentage != null ? `${aiCoach.sentimentPercentage}% ` : ''}
+                  {aiCoach.sentiment || 'Positive'} Reputation
                 </Text>
               </View>
             )}
           </View>
+
+          {/* Visual Sentiment Meter */}
+          {aiCoach?.sentimentPercentage != null && (
+            <View style={styles.aiSentimentMeterContainer}>
+              <View style={styles.aiSentimentMeterHeader}>
+                <Text style={styles.aiSentimentMeterLabel}>Customer Sentiment Index</Text>
+                <Text style={styles.aiSentimentMeterValue}>{aiCoach.sentimentPercentage}% Positive</Text>
+              </View>
+              <View style={styles.aiMeterTrack}>
+                <View
+                  style={[
+                    styles.aiMeterFill,
+                    {
+                      width: `${Math.min(100, Math.max(5, aiCoach.sentimentPercentage))}%`,
+                      backgroundColor:
+                        aiCoach.sentimentPercentage >= 75
+                          ? '#10B981'
+                          : aiCoach.sentimentPercentage >= 50
+                          ? '#F59E0B'
+                          : '#EF4444',
+                    },
+                  ]}
+                />
+              </View>
+            </View>
+          )}
 
           {/* AI Synthesis Summary */}
           {aiCoach?.summary ? (
@@ -892,6 +930,41 @@ const styles = StyleSheet.create({
   },
   sentimentNeutralText: {
     color: '#D97706',
+  },
+  aiSentimentMeterContainer: {
+    backgroundColor: '#F8FAFC',
+    borderRadius: RADIUS.md,
+    padding: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  aiSentimentMeterHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  aiSentimentMeterLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.textMuted,
+    textTransform: 'uppercase',
+  },
+  aiSentimentMeterValue: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#059669',
+  },
+  aiMeterTrack: {
+    height: 6,
+    backgroundColor: '#E2E8F0',
+    borderRadius: RADIUS.full,
+    overflow: 'hidden',
+  },
+  aiMeterFill: {
+    height: '100%',
+    borderRadius: RADIUS.full,
   },
   aiCoachSummary: {
     fontSize: 13,

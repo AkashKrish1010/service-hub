@@ -32,7 +32,9 @@ export const reviewService = {
 
   getByProvider: async (providerId: string) => {
     const res = await api.get(`/reviews/provider/${providerId}`);
-    return res.data.data;
+    const list = res.data.data || [];
+    (list as any).sentiment = res.data.sentiment || null;
+    return list;
   },
 
   getAll: async () => {

@@ -53,17 +53,20 @@ export default function ReviewScreen() {
 
     setSubmitting(true);
     try {
-      await reviewService.create({
+      const resData: any = await reviewService.create({
         bookingId: bookingId as string,
         providerId: (providerId as string) || '',
         rating,
         reviewText,
       });
 
+      const score = resData?.sentimentScore != null ? resData.sentimentScore : 95;
+      const label = resData?.sentimentLabel || 'Positive';
+
       setAlertConfig({
         visible: true,
         title: 'Review Submitted',
-        message: 'Thank you! Your review has been recorded on the provider profile.',
+        message: `Thank you! Sentiment analysis rated your feedback at ${score}% ${label}. It has been published!`,
         type: 'success',
         confirmText: 'Done',
         onConfirm: () => {

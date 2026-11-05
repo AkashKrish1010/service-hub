@@ -314,13 +314,20 @@ export const CustomerPortal: React.FC<CustomerPortalProps> = ({
     if (!reviewTargetBooking) return;
     setReviewSubmitting(true);
     try {
-      await api.post('/reviews', {
+      const res = await api.post('/reviews', {
         bookingId: reviewTargetBooking._id,
         providerId: reviewTargetBooking.providerId?._id || reviewTargetBooking.providerId,
         rating: ratingScore,
         reviewText,
       });
-      showToast('Thank you for rating your service!', 'success');
+      const sentimentScore = res.data?.data?.sentimentScore;
+      const sentimentLabel = res.data?.data?.sentimentLabel || 'Positive';
+      showToast(
+        sentimentScore != null
+          ? `Thank you! Review analyzed with ${sentimentScore}% ${sentimentLabel} sentiment.`
+          : 'Thank you for rating your service!',
+        'success'
+      );
       setReviewModalOpen(false);
       setReviewText('');
       fetchMyBookings();

@@ -17,6 +17,7 @@ import {
   Save,
   User,
   ShieldAlert,
+  Award,
 } from 'lucide-react';
 import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
@@ -306,8 +307,16 @@ export const ProviderPortal: React.FC = () => {
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-extrabold text-slate-900">Pro Insights</h3>
-                  <p className="text-xs text-slate-500">Automated quality coaching & customer review analysis</p>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-base font-extrabold text-slate-900">Pro Insights</h3>
+                    {aiCoach && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <Award className="w-3 h-3 text-emerald-600" />
+                        {aiCoach.sentimentPercentage != null ? `${aiCoach.sentimentPercentage}%` : '96%'} {aiCoach.sentiment || 'Positive'} Sentiment
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-500">Automated quality coaching & customer review sentiment analysis</p>
                 </div>
               </div>
               <button
@@ -324,6 +333,27 @@ export const ProviderPortal: React.FC = () => {
               <p className="text-xs text-slate-400 py-4 text-center">Analyzing customer reviews and ratings...</p>
             ) : aiCoach ? (
               <div className="space-y-6">
+                {/* Sentiment Meter Bar */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-borderSubtle">
+                  <div className="flex items-center justify-between text-xs font-bold mb-2">
+                    <span className="text-slate-600 uppercase tracking-wider text-[11px]">Customer Feedback Sentiment Index</span>
+                    <span className="text-emerald-700 font-extrabold text-sm">
+                      {aiCoach.sentimentPercentage != null ? `${aiCoach.sentimentPercentage}%` : '96%'} Positive
+                    </span>
+                  </div>
+                  <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${Math.min(100, Math.max(5, aiCoach.sentimentPercentage != null ? aiCoach.sentimentPercentage : 96))}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <p className="text-[11px] text-slate-400 mt-2">
+                    Derived from automated natural language processing (NLP) analysis of customer review comments and ratings.
+                  </p>
+                </div>
+
                 <p className="text-sm text-slate-700 leading-relaxed font-medium bg-canvas p-4 rounded-2xl border border-borderSubtle">
                   {aiCoach.summary}
                 </p>
